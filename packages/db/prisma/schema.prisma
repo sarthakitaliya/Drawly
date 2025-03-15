@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String?
+  email     String     @unique
+  image     String?
+  createdAt DateTime   @default(now())
+  documents Document[]
+  rooms     Member[]
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  slug      String   @default("Untitled")
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  shapes    Shape[]
+  room      Room?
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Room {
+  id         String   @id @default(cuid())
+  documentId String   @unique
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  members    Member[]
+  createdAt  DateTime @default(now())
+}
+
+model Member {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  role   Role   @default(USER)
+}
+
+enum Role {
+  OWNER
+  USER
+}
+
+model Shape {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  type       String // e.g., "rectangle", "circle"
+  x          Float
+  y          Float
+  width      Float?
+  height     Float?
+  color      String   @default("#000000")
+  createdAt  DateTime @default(now())
+}
