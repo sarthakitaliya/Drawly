@@ -30,6 +30,7 @@
     "tailwindcss": "^4.0.9"
   },
   "devDependencies": {
+    "@repo/utils": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/store": "workspace:*",

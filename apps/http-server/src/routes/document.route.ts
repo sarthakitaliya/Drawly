@@ -1,5 +1,5 @@
 import express, { Router } from "express";  
-import { createDocument, getAllDocuments, getAllShapes } from "../controllers/document";
+import { createDocument, getAllDocuments, getAllShapes } from "../controllers/document.controller";
 
 const router: Router = express.Router();
 

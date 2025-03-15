@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
-import api from "../../utils/axios";
 import axios from "axios";
 
 export default function ProtectedLayout({
@@ -17,9 +16,6 @@ export default function ProtectedLayout({
   const { data: session, status } = useSession();
   const setToken = async () => {
     const res = await axios.post("/api/auth/set-token", {withCredentials: true});
-    console.log(res);
-    const check = await api("http://localhost:3001/");
-    console.log("ccccc---", check);
   }
   useEffect(() => {
     if (session?.user && status == "authenticated") {

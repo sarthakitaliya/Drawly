@@ -20,6 +20,9 @@ importers:
 
   apps/http-server:
     dependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -117,6 +120,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@types/node':
         specifier: ^22
         version: 22.13.0
@@ -203,6 +209,9 @@ importers:
       '@repo/typescript-config':
         specifier: 'workspace: *'
         version: link:../typescript-config
+      '@repo/utils':
+        specifier: 'workspace: *'
+        version: link:../utils
 
   packages/typescript-config: {}
 
@@ -239,6 +248,15 @@ importers:
       typescript:
         specifier: 5.7.3
         version: 5.7.3
+
+  packages/utils:
+    dependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      axios:
+        specifier: ^1.8.2
+        version: 1.8.2
 
 packages:
 

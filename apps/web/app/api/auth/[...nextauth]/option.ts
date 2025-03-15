@@ -21,13 +21,6 @@ export const authOption: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.picture = user.image;
-
-        //custom JWT token
-        token.accessToken = jwt.sign(
-          { id: user.id, email: user.email },
-          process.env.JWT_SECRET as string
-        );
-
       }
 
       let existingUser = await prismaClient.user.findUnique({
@@ -48,6 +41,11 @@ export const authOption: NextAuthOptions = {
         });
       }
       token.id = existingUser.id;
+      //custom JWT token
+      token.accessToken = jwt.sign(
+        { id: token.id, email: token.email },
+        process.env.JWT_SECRET as string
+      );
 
       return token;
     },

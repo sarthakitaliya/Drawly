@@ -6,6 +6,7 @@ import { Plus, Users, LogIn } from "lucide-react";
 import Document from "../../../components/Document";
 import { JSX, useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
+import { api } from "@repo/utils/api";
 
 const documents = [
   {
@@ -61,6 +62,19 @@ export default function Dashboard() {
     }
     setInputText("");
   };
+
+  const handleOnConfirm = async () => {
+    if(type === "create"){
+      const create = await api.post("/documents", {slug: inputText});
+      console.log(create);
+      
+    }else if(type === "collaborate"){ 
+      console.log("Collaborate Document");
+    }else if(type === "join"){
+      console.log("Join Document");
+    }
+    setIsOpen(false);
+  }
   return (
     <div className="bg-[#101217] flex flex-col gap-10 w-full min-h-screen">
       
@@ -109,8 +123,7 @@ export default function Dashboard() {
         inputText={inputText}
         mode={type}
         onClose={() => setIsOpen(false)}
-        onConfirm={() => {console.log(inputText); setIsOpen(false)
-        }}
+        onConfirm={handleOnConfirm}
       />
     </div>
   );

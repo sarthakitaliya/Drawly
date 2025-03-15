@@ -6,7 +6,7 @@ import { authOption } from "../[...nextauth]/option";
 export async function POST(req: Request) {
 const session = await getServerSession(authOption);
 const token = session?.user?.token;
-console.log(session);
+// console.log(session);
 
   if (!token) {
     return NextResponse.json({message: "Token missing"}, { status: 400 });

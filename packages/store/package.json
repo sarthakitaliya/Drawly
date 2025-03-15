@@ -6,7 +6,8 @@
     ".": "./src/index.ts"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace: *"
+    "@repo/typescript-config": "workspace: *",
+    "@repo/utils": "workspace: *"
   },
   "keywords": [],
   "author": "",
