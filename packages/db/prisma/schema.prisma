@@ -14,7 +14,7 @@ model User {
   image     String?
   createdAt DateTime   @default(now())
   documents Document[]
-  rooms     Member[]
+  member    Member[]
 }
 
 model Document {
@@ -22,43 +22,37 @@ model Document {
   slug      String   @default("Untitled")
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members   Member[]
   shapes    Shape[]
-  room      Room?
   isPublic  Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
-model Room {
-  id         String   @id @default(cuid())
-  documentId String   @unique
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  members    Member[]
-  createdAt  DateTime @default(now())
-}
 
 model Member {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roomId String
-  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  role   Role   @default(USER)
+  documentId    String
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  role   Role   @default(EDITOR)
 }
 
 enum Role {
   OWNER
-  USER
+  EDITOR
+  VIEWER
 }
 
 model Shape {
   id         String   @id @default(cuid())
   documentId String
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  type       String // e.g., "rectangle", "circle"
+  type       String 
   x          Float
   y          Float
   width      Float?
   height     Float?
-  color      String   @default("#000000")
+  color      String   @default("#FFFFFF")
   createdAt  DateTime @default(now())
 }

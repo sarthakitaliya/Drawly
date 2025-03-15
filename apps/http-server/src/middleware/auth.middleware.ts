@@ -9,16 +9,19 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
     try {
         const token = req.cookies.token;
         if(!token){
-            res.status(401).json({message: "Unauthorized"});
+            res.status(401).json({message: "JWT must be provided"});
+            return
         }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
+        const decoded = await jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
         if(typeof decoded !== "object" || !decoded.id){
-            throw new Error("Invalid token");
+            res.status(401).json({ message: "Invalid token" })
+            return
         }
         req.user = decoded;
         next();
     } catch (error) {
         console.log(error);
         res.status(401).json({message: "Unauthorized"});
+        return
     }
 }
