@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/controllers/document.ts","./src/middleware/auth.middleware.ts","./src/routes/document.route.ts","./src/types/custom.d.ts"],"version":"5.7.3"}
+{"root":["./src/index.ts","./src/controllers/document.controller.ts","./src/middleware/auth.middleware.ts","./src/routes/document.route.ts","./src/types/custom.d.ts"],"version":"5.7.3"}

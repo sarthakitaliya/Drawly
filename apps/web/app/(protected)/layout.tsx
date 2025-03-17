@@ -2,10 +2,11 @@
 
 import { useUserStore } from "@repo/store";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import {Toaster} from "react-hot-toast"
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import axios from "axios";
+import ErrorHandler from "../../components/ErrorHandle";
 
 export default function ProtectedLayout({
   children,
@@ -43,6 +44,8 @@ export default function ProtectedLayout({
   if(!session?.user) redirect("/api/auth/signin");
   return (
     <>
+      <Toaster/>
+      <ErrorHandler/>
       {children}
     </>
   );

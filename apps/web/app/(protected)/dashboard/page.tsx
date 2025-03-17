@@ -1,16 +1,17 @@
 "use client";
-import { useUserStore } from "@repo/store";
+import { useUserStore, useCanvasStore, useLoadingStore } from "@repo/store";
 import Navbar from "../../../components/Navbar";
 import Card from "../../../components/Card";
 import { Plus, Users, LogIn } from "lucide-react";
 import Document from "../../../components/Document";
-import { JSX, useEffect, useState } from "react";
+import { JSX, use, useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
+import { redirect } from "next/navigation";
 
 const documents = [
   {
-    id: "1",
+    id: "1asd",
     name: "Untitled Document",
     createdAt: "2 minutes ago",
     members: [
@@ -19,31 +20,46 @@ const documents = [
     ],
   },
   {
-    id: "2",
+    id: "fefe2",
     name: "Project Wireframes",
     createdAt: "2 days ago",
     members: [{ id: "1", name: "You", color: "#8b5cf6" }],
   },
   {
-    id: "23",
+    id: "2asfnme3",
     name: "Project Wireframes",
     createdAt: "2 days ago",
     members: [{ id: "1", name: "You", color: "#8b5cf6" }],
   },
-  
 ];
 
 export default function Dashboard() {
   const { setUser, user } = useUserStore();
+  const {loading} = useLoadingStore();
+  const { createDocument, documentID } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState<"create" | "collaborate" | "join"| "none">("create");
+  const [type, setType] = useState<"create" | "collaborate" | "join" | "none">(
+    "create"
+  );
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [inputText, setInputText] = useState("");
 
   useEffect(() => {
-    document.body.style.overflowX = 'hidden';
-  }, [])
+    document.body.style.overflowX = "hidden";
+  }, []);
+  useEffect(() => {
+    if(loading === false) {
+      setIsOpen(false);
+      
+    }
+  }, [loading]);
+
+  useEffect(() => { 
+    if(documentID) {
+      redirect(`/document/${documentID}`);
+    }
+  }, [documentID]);
 
   const openPopup = (type: "create" | "collaborate" | "join") => {
     setIsOpen(true);
@@ -55,29 +71,25 @@ export default function Dashboard() {
       setType("collaborate");
       setTitle("Start a Collaborative Drawing");
       setSubTitle("Create a document that others can join.");
-    }else if(type === "join"){
+    } else if (type === "join") {
       setType("join");
       setTitle("Join Shared Drawing");
-      setSubTitle("Enter the room ID to join a shared drawing session.")
+      setSubTitle("Enter the room ID to join a shared drawing session.");
     }
     setInputText("");
   };
 
   const handleOnConfirm = async () => {
-    if(type === "create"){
-      const create = await api.post("/documents", {slug: inputText});
-      console.log(create);
-      
-    }else if(type === "collaborate"){ 
+    if (type === "create") {
+      createDocument(inputText);
+    } else if (type === "collaborate") {
       console.log("Collaborate Document");
-    }else if(type === "join"){
+    } else if (type === "join") {
       console.log("Join Document");
     }
-    setIsOpen(false);
-  }
+  };
   return (
     <div className="bg-[#101217] flex flex-col gap-10 w-full min-h-screen">
-      
       <Navbar />
       <div className="flex flex-col justify-between items-center md:flex-row m-20 gap-7">
         <Card

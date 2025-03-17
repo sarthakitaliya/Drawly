@@ -1,5 +1,5 @@
 import express, { Router } from "express";  
-import { createDocument, getAllDocuments, getAllShapes } from "../controllers/document.controller";
+import { createDocument, getAllDocuments, getAllShapes, addShape, authorizeDocumentAccess } from "../controllers/document.controller";
 
 const router: Router = express.Router();
 
@@ -9,7 +9,13 @@ router.get("/", getAllDocuments )
 //create document
 router.post("/", createDocument)
 
-//getting all shapes for single document
-router.get("/:id", getAllShapes)
+//authorize user
+router.post("/authorize", authorizeDocumentAccess)
+
+//getting all existing shapes for single document
+router.post("/shapes", getAllShapes)
+
+//add shape to document
+router.post("/add-shape", addShape)
 
 export default router;

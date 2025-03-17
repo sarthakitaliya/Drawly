@@ -1,3 +1,4 @@
+import { useCanvasStore } from "@repo/store";
 import { Tool } from "../components/Toolbar";
 
 type Shape =
@@ -31,16 +32,25 @@ export class Draw {
   private startX = 0;
   private startY = 0;
   private selectedTool: Tool = "circle";
+  private setShapes: (shapes: Shape) => void;
+  private documentID: string;
+  private addShape: (shape: Shape) => void;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, shapes: Shape[], setShapes: (shapes: Shape) => void, addShape: (shape: Shape) => void, documentID: string) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.ctx = canvas.getContext("2d")!;
     this.clearCanvas()
-    this.existingShapes = [];
     this.clicked = false;
     this.initMouseHandlers();
+    //initialize state variables
+    this.existingShapes = shapes;
+    this.setShapes = setShapes;
+    console.log("dasdnbanwd jnj", documentID);
+    
+    this.documentID = documentID;
+    this.addShape = addShape;
   }
 
   setTool(tool: Tool) {
@@ -133,6 +143,7 @@ export class Draw {
         width,
         height,
       };
+      this.setShapes(shape);  
     } else if (this.selectedTool === "circle") {
       const centerX = (this.startX + e.offsetX) / 2;
       const centerY = (this.startY + e.offsetY) / 2;
@@ -152,6 +163,7 @@ export class Draw {
     }
 
     this.existingShapes.push(shape);
+    this.addShape(shape);
     console.log(this.existingShapes);
     
   };

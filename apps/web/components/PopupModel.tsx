@@ -1,3 +1,6 @@
+"use client"
+import { useLoadingStore } from "@repo/store";
+import { Loader } from "lucide-react";
 import { JSX, useEffect, useState } from "react";
 
 interface popupModel {
@@ -21,11 +24,8 @@ export default function Popup({
   onClose,
   onConfirm,
 }: popupModel) {
-  useEffect(() =>   {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    }
-  }, [isOpen]);
+
+  const {loading} = useLoadingStore();
   if (!isOpen) return null;
 
   return (
@@ -67,7 +67,7 @@ export default function Popup({
             onClick={onConfirm}
             className="bg-[#158AFF] px-4 py-2 rounded-[12px] cursor-pointer hover:opacity-85"
           >
-            Confirm
+            {loading ? <Loader className="animate-spin "/> : "Confirm"}
           </button>
         </div>
       </div>
