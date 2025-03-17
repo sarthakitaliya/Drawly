@@ -2,35 +2,47 @@
 import { use, useEffect, useRef, useState } from "react";
 import ToolBar, { Tool } from "../../../../components/Toolbar";
 import { Draw } from "../../../../utils/draw";
-import { useParams } from "next/navigation";
-import { useCanvasStore } from "@repo/store";
-import { api } from "@repo/utils/api";
+import { redirect, useParams } from "next/navigation";
+import { useCanvasStore, useLoadingStore } from "@repo/store";
+import { checkDocumentAccess } from "../../../../utils/checkDocumentAccess";
 
 export default function CanvasPage() {
-  const params = useParams();
-  const { setDocumentID, documentID, shapes, setShapes, addShape, getShapes } =
-    useCanvasStore();
   const url = new URL(window.location.href);
   const documentId = url.pathname.split("/").pop();
+  
+  const params = useParams();
+  const { setDocumentID, shapes, setShapes, addShape, getShapes, documentID } =
+  useCanvasStore();
+  const {setError} = useLoadingStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tool, setTool] = useState<Tool>("rect");
   const [canva, setCanva] = useState<Draw>();
-  
+
   useEffect(() => {
-    if (documentId) {
+    if (documentId && documentId !== "dashboard") {
       setDocumentID(documentId);
     }
     return () => {
       setDocumentID("");
-    }
+    };
   }, [documentID]);
-
   useEffect(() => {
-    if (documentID) {
-      getShapes();
+    if(documentID && documentID !== "dashboard") {
+      const res = checkDocumentAccess(documentID as string);
+      console.log("Document Access", res);
+      if (!res) {
+        setDocumentID("");
+        setError("You don't have access to this document");
+        redirect("/dashboard");
+      }
     }
-  }, [documentID]);
+  }, [documentID])
+  useEffect(() => {
+    if (documentId) {
+      getShapes(documentId as string);
+    }
+  }, [documentId]);
   useEffect(() => {
     if (canvasRef.current) {
       const g = new Draw(
@@ -38,22 +50,15 @@ export default function CanvasPage() {
         shapes,
         setShapes,
         addShape,
-        documentID
+        documentId
       );
       setCanva(g);
 
       return () => {
         g.destroy();
-        setDocumentID("");
       };
     }
-  }, [canvasRef, documentID]);
-  useEffect(() => {
-    const res = checkDocument(documentId as string);
-    return () => {
-      setDocumentID("");
-    };
-  }, []);
+  }, [canvasRef, documentId]);
   useEffect(() => {
     canva?.setTool(tool);
   }, [tool, canva]);
@@ -63,19 +68,4 @@ export default function CanvasPage() {
       <canvas ref={canvasRef}></canvas>
     </div>
   );
-}
-
-
-
-const checkDocument = async (documentId: string) => {
-  try {
-    const res = await api.post("/documents/authorize", { documentId });
-    if(res.data.success) {}
-    
-    return res;
-  } catch (error) {
-    console.log(error);
-    return
-    
-  }
 }

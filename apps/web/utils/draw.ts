@@ -34,7 +34,7 @@ export class Draw {
   private selectedTool: Tool = "circle";
   private setShapes: (shapes: Shape) => void;
   private documentID: string;
-  private addShape: (shape: Shape) => void;
+  private addShape: (shape: Shape, documentID: string) => void;
 
   constructor(canvas: HTMLCanvasElement, shapes: Shape[], setShapes: (shapes: Shape) => void, addShape: (shape: Shape) => void, documentID: string) {
     this.canvas = canvas;
@@ -47,8 +47,6 @@ export class Draw {
     //initialize state variables
     this.existingShapes = shapes;
     this.setShapes = setShapes;
-    console.log("dasdnbanwd jnj", documentID);
-    
     this.documentID = documentID;
     this.addShape = addShape;
   }
@@ -163,7 +161,7 @@ export class Draw {
     }
 
     this.existingShapes.push(shape);
-    this.addShape(shape);
+    this.addShape(shape, this.documentID);
     console.log(this.existingShapes);
     
   };

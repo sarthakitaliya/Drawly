@@ -8,6 +8,7 @@ import { JSX, use, useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
 import { redirect } from "next/navigation";
+import { checkDocumentAccess } from "../../../utils/checkDocumentAccess";
 
 const documents = [
   {
@@ -35,8 +36,10 @@ const documents = [
 
 export default function Dashboard() {
   const { setUser, user } = useUserStore();
-  const {loading} = useLoadingStore();
-  const { createDocument, documentID } = useCanvasStore();
+  const {setError} = useLoadingStore();
+
+  const { loading } = useLoadingStore();
+  const { createDocument, documentID, setDocumentID } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<"create" | "collaborate" | "join" | "none">(
     "create"
@@ -49,15 +52,15 @@ export default function Dashboard() {
     document.body.style.overflowX = "hidden";
   }, []);
   useEffect(() => {
-    if(loading === false) {
+    if (loading === false) {
       setIsOpen(false);
-      
     }
   }, [loading]);
 
-  useEffect(() => { 
-    if(documentID) {
+  useEffect(() => {
+    if (documentID) {
       redirect(`/document/${documentID}`);
+      
     }
   }, [documentID]);
 

@@ -4,11 +4,31 @@ import { Request, Response } from "express";
 
 export const getAllDocuments = async(req: Request, res: Response) => {
     try {
-        res.send("hey");
+        const documents = await prismaClient.document.findMany({
+            where: {
+                OR:[
+                    {ownerId: req.user.id},
+                    {members: {some: {id: req.user.id}}}
+                ]
+            },
+            select:{
+                id: true,
+                slug: true,
+                ownerId: true,
+                members: true
+            }
+        })
+        res.json({
+            success: true,
+            documents
+        });
         
     } catch (error) {
         console.log(error);
-        res.send(error)
+        res.status(500).json({
+            success: false, 
+            message: "Internal server error"
+        })
     }
 
 }
