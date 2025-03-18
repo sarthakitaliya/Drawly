@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { IconButton } from "./IconButton";
 import {Hand, Square, Diamond, Circle, Minus, LayoutDashboard, Share2} from "lucide-react"
 import { useCanvasStore } from "@repo/store";
@@ -6,6 +6,7 @@ export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line";
 
 export default function ToolBar({ selectedTool, setSelectedTool }: { selectedTool: Tool, setSelectedTool: (s: Tool) => void }) {
   const {setDocumentID} = useCanvasStore();
+  const router = useRouter();
   return (
     <div
     style={{
@@ -19,7 +20,7 @@ export default function ToolBar({ selectedTool, setSelectedTool }: { selectedToo
         <IconButton
           onClick={() => {
             setDocumentID("");
-            redirect("/dashboard");
+            router.push("/dashboard");
           }}
           icon={<LayoutDashboard size={20} color="white"/>}
           title="Dashboard" 

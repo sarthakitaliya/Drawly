@@ -32,6 +32,8 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   addShape: async (shape: Shape, documentId: string) => {
 
     try {
+      console.log("from the addShape",get().documentID);
+      
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
         return;
@@ -42,8 +44,8 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         shape: shape,
       });
       if (res.data.success === true) {
-        console.log(res.data);
-        set({ shapes: [...get().shapes, shape] });
+        console.log(res.data.addShape);
+        return res.data.addShape;
       }
       useLoadingStore.getState().setLoading(false);
     } catch (error) {
@@ -57,7 +59,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
   getShapes: async (documentId: string) => {
     try {
-      console.log("from the store",get().documentID);
+      console.log("from the store",documentId);
       
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");

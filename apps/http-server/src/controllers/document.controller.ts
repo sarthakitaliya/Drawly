@@ -128,6 +128,8 @@ export const addShape = async(req: Request, res: Response) => {
                 height: shape.height,
             }
         })
+        console.log(addShape);
+        
         res.json({
             success: true,
             addShape,

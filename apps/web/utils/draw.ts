@@ -53,7 +53,7 @@ export class Draw {
     this.initMouseHandlers();
     //initialize state variables
     this.getShapes = getShapes;
-    this.existingShapes = shapes;
+    this.existingShapes = [];
     this.setShapes = setShapes;
     this.documentID = documentID;
     this.addShape = addShape;
@@ -124,6 +124,8 @@ export class Draw {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
     if (!this.existingShapes) return;
+    // console.log("from the draw", this.existingShapes);
+    
     this.existingShapes.forEach((shape) => {
       if (!shape) return;
 
@@ -178,11 +180,9 @@ export class Draw {
     if (!shape) {
       return;
     }
-    console.log("asdw", this.existingShapes);
-
     this.existingShapes.push(shape);
     this.addShape(shape, this.documentID);
-    console.log(this.existingShapes);
+    console.log("that is from drawwww", this.documentID);
   };
 
   mouseMoveHandler = (e: MouseEvent) => {
