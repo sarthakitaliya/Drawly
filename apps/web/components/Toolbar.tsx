@@ -1,8 +1,11 @@
+import { redirect } from "next/navigation";
 import { IconButton } from "./IconButton";
-import {Hand, Square, Diamond, Circle, Minus} from "lucide-react"
+import {Hand, Square, Diamond, Circle, Minus, LayoutDashboard, Share2} from "lucide-react"
+import { useCanvasStore } from "@repo/store";
 export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line";
 
 export default function ToolBar({ selectedTool, setSelectedTool }: { selectedTool: Tool, setSelectedTool: (s: Tool) => void }) {
+  const {setDocumentID} = useCanvasStore();
   return (
     <div
     style={{
@@ -11,7 +14,18 @@ export default function ToolBar({ selectedTool, setSelectedTool }: { selectedToo
       left: "50%",
       transform: "translateX(-50%)"
     }} 
-     className="flex gap-3 items-center justify-center shadow-lg bg-zinc-800  px-4 py-1 rounded-lg">
+     className="  flex items-center justify-between w-full px-7">
+      <div className="px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
+        <IconButton
+          onClick={() => {
+            setDocumentID("");
+            redirect("/dashboard");
+          }}
+          icon={<LayoutDashboard size={20} color="white"/>}
+          title="Dashboard" 
+        />
+      </div>
+      <div className="flex gap-3 items-center justify-center px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
       <IconButton
         onClick={() => {
           setSelectedTool("hand");
@@ -56,6 +70,16 @@ export default function ToolBar({ selectedTool, setSelectedTool }: { selectedToo
         icon={<Minus size={20} />}
         title="Line"
       />
+      </div>
+      <div className="px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
+        <IconButton
+          onClick={() => {
+            console.log("Share");
+          }}
+          icon={<Share2 size={20} color="white"/>}
+          title="Share"
+        />
+      </div>
     </div>
   );
 }

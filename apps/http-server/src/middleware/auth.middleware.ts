@@ -7,12 +7,16 @@ interface DecodedToken extends JwtPayload{
 }
 export const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies.token;
+
+        const token = req.cookies["next-auth.session-token"]
+        
         if(!token){
             res.status(401).json({message: "JWT must be provided"});
             return
         }
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
+        console.log(decoded);
+        
         if(typeof decoded !== "object" || !decoded.id){
             res.status(401).json({ message: "Invalid token" })
             return

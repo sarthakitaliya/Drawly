@@ -1,4 +1,4 @@
-import { useCanvasStore } from "@repo/store";
+
 import { Tool } from "../components/Toolbar";
 
 type Shape =
@@ -35,20 +35,40 @@ export class Draw {
   private setShapes: (shapes: Shape) => void;
   private documentID: string;
   private addShape: (shape: Shape, documentID: string) => void;
+  private getShapes: (documentId: string) => Shape[];
 
-  constructor(canvas: HTMLCanvasElement, shapes: Shape[], setShapes: (shapes: Shape) => void, addShape: (shape: Shape) => void, documentID: string) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    shapes: Shape[],
+    setShapes: (shapes: Shape) => void,
+    addShape: (shape: Shape) => void,
+    documentID: string,
+    getShapes: (documentId: string) => Shape[]
+  ) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.ctx = canvas.getContext("2d")!;
-    this.clearCanvas()
     this.clicked = false;
     this.initMouseHandlers();
     //initialize state variables
+    this.getShapes = getShapes;
     this.existingShapes = shapes;
     this.setShapes = setShapes;
     this.documentID = documentID;
     this.addShape = addShape;
+    this.init();
+  }
+
+  async init() {
+    if(!this.documentID) return;
+    const shapes = await this.getShapes(this.documentID);
+    this.existingShapes = shapes as Shape[];
+    console.log("from the draw", this.documentID);
+    
+    console.log(this.existingShapes);
+    
+    this.clearCanvas();
   }
 
   setTool(tool: Tool) {
@@ -102,9 +122,8 @@ export class Draw {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#18181B";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-
-    if(!this.existingShapes) return;
+    
+    if (!this.existingShapes) return;
     this.existingShapes.forEach((shape) => {
       if (!shape) return;
 
@@ -141,7 +160,7 @@ export class Draw {
         width,
         height,
       };
-      this.setShapes(shape);  
+      this.setShapes(shape);
     } else if (this.selectedTool === "circle") {
       const centerX = (this.startX + e.offsetX) / 2;
       const centerY = (this.startY + e.offsetY) / 2;
@@ -159,11 +178,11 @@ export class Draw {
     if (!shape) {
       return;
     }
+    console.log("asdw", this.existingShapes);
 
     this.existingShapes.push(shape);
     this.addShape(shape, this.documentID);
     console.log(this.existingShapes);
-    
   };
 
   mouseMoveHandler = (e: MouseEvent) => {

@@ -12,7 +12,6 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     try {
       useLoadingStore.getState().setLoading(true);
       const ids = JSON.parse(sessionStorage.getItem("documentIds") || "[]");  
-      console.log("Document IDs", ids);
       
       const res = await api.post<response>("/documents", {
         slug,
@@ -55,10 +54,10 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
   setShapes: (shapes) => {
     set({ shapes: [...get().shapes, shapes] });
-    console.log("Shapes----------", get().shapes);
   },
   getShapes: async (documentId: string) => {
     try {
+      console.log("from the store",get().documentID);
       
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
@@ -70,9 +69,10 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         documentId,
       });
       if (res.data.success === true) {
-        console.log("Shapes fetched successfully");
-        console.log(res.data);
-        set({ shapes: [...get().shapes, res.data.shapes] });
+        // console.log("Shapes fetched successfully");
+        // console.log(res.data);
+        return res.data.shapes;
+        
       }
       useLoadingStore.getState().setLoading(false);
     } catch (error) {
@@ -100,7 +100,7 @@ interface CanvasStore {
   shapes: Shape[];
   addShape: (shape: Shape) => void;
   setShapes: (shapes: Shape) => void;
-  getShapes: (documentId: string) => void;
+  getShapes: (documentId: string) => Promise<Shape[] | null>;
 }
 
 interface Shape {

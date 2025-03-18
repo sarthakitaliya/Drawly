@@ -1,8 +1,8 @@
 "use client";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ToolBar, { Tool } from "../../../../components/Toolbar";
 import { Draw } from "../../../../utils/draw";
-import { redirect, useParams } from "next/navigation";
+import { redirect } from "next/navigation";
 import { useCanvasStore, useLoadingStore } from "@repo/store";
 import { checkDocumentAccess } from "../../../../utils/checkDocumentAccess";
 
@@ -10,7 +10,6 @@ export default function CanvasPage() {
   const url = new URL(window.location.href);
   const documentId = url.pathname.split("/").pop();
   
-  const params = useParams();
   const { setDocumentID, shapes, setShapes, addShape, getShapes, documentID } =
   useCanvasStore();
   const {setError} = useLoadingStore();
@@ -21,12 +20,14 @@ export default function CanvasPage() {
 
   useEffect(() => {
     if (documentId && documentId !== "dashboard") {
+      console.log("asdw", documentId);
+      
       setDocumentID(documentId);
     }
     return () => {
       setDocumentID("");
     };
-  }, [documentID]);
+  }, []);
   useEffect(() => {
     if(documentID && documentID !== "dashboard") {
       const res = checkDocumentAccess(documentID as string);
@@ -37,12 +38,13 @@ export default function CanvasPage() {
         redirect("/dashboard");
       }
     }
-  }, [documentID])
+  }, [documentId])
   useEffect(() => {
-    if (documentId) {
-      getShapes(documentId as string);
+    if (documentID) {
+      console.log("Document ID from mount", documentID);
+      
     }
-  }, [documentId]);
+  }, []);
   useEffect(() => {
     if (canvasRef.current) {
       const g = new Draw(
@@ -50,7 +52,8 @@ export default function CanvasPage() {
         shapes,
         setShapes,
         addShape,
-        documentId
+        documentID,
+        getShapes
       );
       setCanva(g);
 
@@ -58,7 +61,7 @@ export default function CanvasPage() {
         g.destroy();
       };
     }
-  }, [canvasRef, documentId]);
+  }, [canvasRef, documentID]);
   useEffect(() => {
     canva?.setTool(tool);
   }, [tool, canva]);

@@ -4,41 +4,30 @@ import Navbar from "../../../components/Navbar";
 import Card from "../../../components/Card";
 import { Plus, Users, LogIn } from "lucide-react";
 import Document from "../../../components/Document";
-import { JSX, use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
 import { redirect } from "next/navigation";
-import { checkDocumentAccess } from "../../../utils/checkDocumentAccess";
+import { timeAgo } from "../../../utils/timeAgo";
+import { getToken } from "next-auth/jwt";
 
-const documents = [
-  {
-    id: "1asd",
-    name: "Untitled Document",
-    createdAt: "2 minutes ago",
-    members: [
-      { id: "1", name: "You", color: "#22c55e" },
-      { id: "2", name: "John Doe", color: "#3b82f6" },
-    ],
-  },
-  {
-    id: "fefe2",
-    name: "Project Wireframes",
-    createdAt: "2 days ago",
-    members: [{ id: "1", name: "You", color: "#8b5cf6" }],
-  },
-  {
-    id: "2asfnme3",
-    name: "Project Wireframes",
-    createdAt: "2 days ago",
-    members: [{ id: "1", name: "You", color: "#8b5cf6" }],
-  },
-];
-
+interface documentType {
+  id: string;
+  ownerId: string;
+  slug: string;
+  owner: {
+    id: string;
+    name: string;
+  };
+  members: {
+    id: string;
+    name: string;
+  }[];
+  createdAt: string;
+}
 export default function Dashboard() {
   const { setUser, user } = useUserStore();
-  const {setError} = useLoadingStore();
-
-  const { loading } = useLoadingStore();
+  const { setError, loading, setLoading, error } = useLoadingStore();
   const { createDocument, documentID, setDocumentID } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<"create" | "collaborate" | "join" | "none">(
@@ -47,9 +36,27 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [inputText, setInputText] = useState("");
+  const [documents, setDocuments] = useState<documentType[]>();
 
   useEffect(() => {
     document.body.style.overflowX = "hidden";
+    const fetchDoc = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/documents");
+        if (res.data.success === false) {
+          setError("Internal server error");
+          setLoading(false);
+          return;
+        }
+        setDocuments(res.data.documents);
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
+        setError("Internal server error");
+      }
+    };
+    fetchDoc();
   }, []);
   useEffect(() => {
     if (loading === false) {
@@ -58,9 +65,8 @@ export default function Dashboard() {
   }, [loading]);
 
   useEffect(() => {
-    if (documentID) {
+    if (documentID && documentID !== "dashboard") {
       redirect(`/document/${documentID}`);
-      
     }
   }, [documentID]);
 
@@ -119,13 +125,26 @@ export default function Dashboard() {
           <h1 className="flex-2 text-right">MEMBERS</h1>
         </div>
         <div className="flex flex-col justify-between items-center">
-          {documents.map((document) => (
+          {error && (
+            <h1 className="text-white text-2xl mt-10">{error}</h1>
+          )}
+          {loading && (
+            <h1 className="text-white text-2xl mt-10">Loading...</h1>
+          )}
+
+          {documents && documents.length === 0 && (
+            <h1 className="text-white text-2xl mt-10">No documents found</h1>
+          )}
+          {documents?.map((document) => (
             <Document
               key={document.id}
-              name={document.name}
-              created={document.createdAt}
-              author="John Doe"
+              name={document.slug}
+              created={timeAgo(document.createdAt)}
+              author={document.owner.name}
               members={document.members}
+              onClick={() => {
+                setDocumentID(document.id);
+              }}
             />
           ))}
         </div>

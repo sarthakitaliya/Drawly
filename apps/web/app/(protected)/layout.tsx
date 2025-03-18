@@ -7,13 +7,9 @@ import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import axios from "axios";
 import ErrorHandler from "../../components/ErrorHandle";
-import { setSessionStorage } from "../../utils/fetchDocuments";
+import { setSessionStorage } from "../../utils/setSession";
 
-const setToken = async () => {
-  const res = await axios.post("/api/auth/set-token", {
-    withCredentials: true,
-  });
-};
+
 export default function ProtectedLayout({
   children,
 }: {
@@ -37,7 +33,6 @@ export default function ProtectedLayout({
         email: user.email,
         photo: user?.image,
       });
-      setToken();
     } else if (status == "unauthenticated") {
       redirect("/api/auth/signin");
     }

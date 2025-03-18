@@ -3,6 +3,7 @@ import { NextAuthOptions } from "next-auth/";
 import GoogleProvider from "next-auth/providers/google";
 import { prismaClient } from "@repo/db/client";
 import jwt from "jsonwebtoken";
+import { JWT } from "next-auth/jwt";
 
 export const authOption: NextAuthOptions = {
   providers: [
@@ -12,8 +13,22 @@ export const authOption: NextAuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt", // Or "database" if you prefer session storage in DB
-    maxAge: 7 * 24 * 60 * 60, // 7 days (adjust as needed)
+    strategy: "jwt", 
+    maxAge: 7 * 24 * 60 * 60, 
+  },
+  jwt:{
+    encode: async(params: {
+      token: JWT;
+      secret: string;
+    }) => {
+      return jwt.sign(params.token, params.secret, {algorithm: "HS256"});
+    },
+    decode: (params: {
+      token: string;
+      secret: string;
+    }) => {
+      return jwt.verify(params.token, params.secret) as JWT;
+    }
   },
   callbacks: {
     async jwt({ token, user, account }) {
@@ -41,12 +56,6 @@ export const authOption: NextAuthOptions = {
         });
       }
       token.id = existingUser.id;
-      //custom JWT token
-      token.accessToken = jwt.sign(
-        { id: token.id, email: token.email },
-        process.env.JWT_SECRET as string
-      );
-
       return token;
     },
 
@@ -56,7 +65,6 @@ export const authOption: NextAuthOptions = {
         session.user.email = token.email;
         session.user.name = token.name;
         session.user.image = token.picture;
-        session.user.token = token.accessToken;
       }
       return session;
     },

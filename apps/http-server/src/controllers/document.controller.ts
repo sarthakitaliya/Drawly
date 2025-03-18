@@ -15,7 +15,14 @@ export const getAllDocuments = async(req: Request, res: Response) => {
                 id: true,
                 slug: true,
                 ownerId: true,
-                members: true
+                owner: {
+                    select:{
+                        id: true,
+                        name: true,
+                    }
+                },
+                members: true,
+                createdAt: true
             }
         })
         res.json({
