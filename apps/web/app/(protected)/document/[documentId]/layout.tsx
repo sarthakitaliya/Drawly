@@ -10,7 +10,7 @@ export default function DocumentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { setDocumentID, documentID } = useCanvasStore();
+  const { setDocumentID } = useCanvasStore();
   const { setError } = useLoadingStore();
   const {documentId } = useParams();
     useEffect(() => {
@@ -20,10 +20,10 @@ export default function DocumentLayout({
       return () => {
         setDocumentID("");
       };
-    }, []);
+    }, [documentId]);
       useEffect(() => {
         if(documentId && documentId !== "dashboard") {
-          const res = checkDocumentAccess(documentID as string);
+          const res = checkDocumentAccess(documentId as string);
           if (!res) {
             setDocumentID("");
             setError("You don't have access to this document");

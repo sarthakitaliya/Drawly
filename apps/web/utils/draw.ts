@@ -39,7 +39,6 @@ export class Draw {
 
   constructor(
     canvas: HTMLCanvasElement,
-    shapes: Shape[],
     setShapes: (shapes: Shape) => void,
     addShape: (shape: Shape) => void,
     documentID: string,

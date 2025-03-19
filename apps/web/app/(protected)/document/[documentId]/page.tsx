@@ -2,9 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import ToolBar, { Tool } from "../../../../components/Toolbar";
 import { Draw } from "../../../../utils/draw";
-import { redirect, useParams } from "next/navigation";
 import { useCanvasStore, useLoadingStore } from "@repo/store";
-import { checkDocumentAccess } from "../../../../utils/checkDocumentAccess";
 
 export default function CanvasPage() {
   const { shapes, setShapes, addShape, getShapes, documentID } =
@@ -16,7 +14,6 @@ export default function CanvasPage() {
     if (canvasRef.current) {
       const g = new Draw(
         canvasRef.current,
-        shapes,
         setShapes,
         addShape,
         documentID,
