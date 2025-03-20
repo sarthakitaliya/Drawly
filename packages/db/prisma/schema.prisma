@@ -18,14 +18,14 @@ model User {
 }
 
 model Document {
-  id        String   @id @default(cuid())
-  slug      String   @default("Untitled")
-  ownerId   String
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  members   Member[]
-  shapes    Shape[]
-  isPublic  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  slug            String   @default("Untitled")
+  ownerId         String
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members         Member[]
+  shapes          Shape[]
+  isCollaborative Boolean @default(false)
+  createdAt       DateTime @default(now())
 }
 
 

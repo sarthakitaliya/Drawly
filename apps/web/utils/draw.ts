@@ -63,10 +63,6 @@ export class Draw {
     if(!this.documentID) return;
     const shapes = await this.getShapes(this.documentID);
     this.existingShapes = shapes as Shape[];
-    console.log("from the draw", this.documentID);
-    
-    console.log(this.existingShapes);
-    
     this.clearCanvas();
   }
 

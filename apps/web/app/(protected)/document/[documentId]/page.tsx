@@ -10,13 +10,14 @@ export default function CanvasPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tool, setTool] = useState<Tool>("rect");
   const [canva, setCanva] = useState<Draw>();
+
   useEffect(() => {
     if (canvasRef.current) {
       const g = new Draw(
         canvasRef.current,
         setShapes,
         addShape,
-        documentID,
+        documentID, 
         getShapes
       );
       setCanva(g);
@@ -31,7 +32,7 @@ export default function CanvasPage() {
   }, [tool, canva]);
   return (
     <div>
-      <ToolBar selectedTool={tool} setSelectedTool={setTool} />
+      <ToolBar selectedTool={tool} setSelectedTool={setTool} canva={canva} />
       <canvas ref={canvasRef}></canvas>
     </div>
   );

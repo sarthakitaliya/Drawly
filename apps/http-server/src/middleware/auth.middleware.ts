@@ -15,7 +15,6 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
             return
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
-        console.log(decoded);
         
         if(typeof decoded !== "object" || !decoded.id){
             res.status(401).json({ message: "Invalid token" })

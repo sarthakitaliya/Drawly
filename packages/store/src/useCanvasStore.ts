@@ -17,9 +17,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         slug,
       });
       if (res.data.success === true) {
-        ids.push(res.data.createDoc.id);
+        ids.push({ id: res.data.createDoc.id, isCollaborative: res.data.createDoc.isCollaborative, ownerId: res.data.createDoc.ownerId });
         sessionStorage.setItem("documentIds", JSON.stringify(ids));
-        set({ documentID: res.data.createDoc.id });
+        set({ documentID: res.data.createDoc.id }); 
         
       }
       useLoadingStore.getState().setLoading(false);
@@ -59,8 +59,6 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
   getShapes: async (documentId: string) => {
     try {
-      console.log("from the store",documentId);
-      
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
         
@@ -94,6 +92,7 @@ interface response {
     slug: string;
   };
   message: string;
+  isCollaborative: boolean;
 }
 interface CanvasStore {
   createDocument: (slug: string) => void;

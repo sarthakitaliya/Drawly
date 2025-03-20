@@ -1,5 +1,5 @@
 "use client";
-import { useUserStore, useCanvasStore, useLoadingStore } from "@repo/store";
+import { useUserStore, useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
 import Navbar from "../../../components/Navbar";
 import Card from "../../../components/Card";
 import { Plus, Users, LogIn } from "lucide-react";
@@ -28,16 +28,16 @@ interface documentType {
 export default function Dashboard() {
   const { setUser, user } = useUserStore();
   const { setError, loading, setLoading, error } = useLoadingStore();
+  const {connectToSocket} = useSocketStore();
   const { createDocument, documentID, setDocumentID } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState<"create" | "collaborate" | "join" | "none">(
+  const [type, setType] = useState<"create" | "join" | "none">(
     "create"
   );
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [inputText, setInputText] = useState("");
   const [documents, setDocuments] = useState<documentType[]>();
-
   useEffect(() => {
     document.body.style.overflowX = "hidden";
     const fetchDoc = async () => {
@@ -70,16 +70,12 @@ export default function Dashboard() {
     }
   }, [documentID]);
 
-  const openPopup = (type: "create" | "collaborate" | "join") => {
+  const openPopup = (type: "create"  | "join") => {
     setIsOpen(true);
     if (type === "create") {
       setType("create");
       setTitle("Create New Drawing");
       setSubTitle("Enter a title for your new drawing.");
-    } else if (type === "collaborate") {
-      setType("collaborate");
-      setTitle("Start a Collaborative Drawing");
-      setSubTitle("Create a document that others can join.");
     } else if (type === "join") {
       setType("join");
       setTitle("Join Shared Drawing");
@@ -91,25 +87,19 @@ export default function Dashboard() {
   const handleOnConfirm = async () => {
     if (type === "create") {
       createDocument(inputText);
-    } else if (type === "collaborate") {
-      console.log("Collaborate Document");
-    } else if (type === "join") {
-      console.log("Join Document");
+    }else if (type === "join") {
+      connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string);
+      setDocumentID(inputText);
     }
   };
   return (
     <div className="bg-[#101217] flex flex-col gap-10 w-full min-h-screen">
       <Navbar />
-      <div className="flex flex-col justify-between items-center md:flex-row m-20 gap-7">
+      <div className="flex flex-col justify-center items-center md:flex-row m-10 gap-7">
         <Card
           CardIcon={Plus}
           title="Start a New Drawing"
           onClick={() => openPopup("create")}
-        />
-        <Card
-          CardIcon={Users}
-          title="Start a Collaborative Drawing"
-          onClick={() => openPopup("collaborate")}
         />
         <Card
           CardIcon={LogIn}

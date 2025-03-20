@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import axios from "axios";
 import ErrorHandler from "../../components/ErrorHandle";
-import { setSessionStorage } from "../../utils/setSession";
+import { setSessionStorage } from "../../utils/SessionStorage";
 
 
 export default function ProtectedLayout({

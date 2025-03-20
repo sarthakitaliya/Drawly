@@ -11,7 +11,7 @@ export default function Card({
 }) {
   return (
     <div
-      className="h-[250px] w-[90vw] md:w-[30vw] text-white bg-[#1A1F2B] flex items-center justify-center rounded-2xl cursor-pointer hover:opacity-85 hover:translate-y-[-5px] hover:shadow-lg transition-all duration-300 ease-out"
+      className="h-[250px] w-[90vw] md:w-[40vw] text-white bg-[#1A1F2B] flex items-center justify-center rounded-2xl cursor-pointer hover:opacity-85 hover:translate-y-[-5px] hover:shadow-lg transition-all duration-300 ease-out"
       onClick={onClick}
     >
       <div className="flex flex-col items-center justify-center">

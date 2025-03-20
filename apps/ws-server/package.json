@@ -13,7 +13,11 @@
   "description": "",
   "dependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/ws": "^8.5.14",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.8.1",
     "ws": "^8.18.1"
   }
 }

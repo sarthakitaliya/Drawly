@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { protectRoute } from "./middleware/auth.middleware";
 import documentRoute from "./routes/document.route";
+import roomRoute from "./routes/room.route";
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ app.get("/", protectRoute, (req, res) => {
 
 
 app.use("/api/documents", protectRoute,  documentRoute)
-// app.use("/api/room", )
+app.use("/api/room", protectRoute,  roomRoute)
 
 
 app.listen(3001);

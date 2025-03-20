@@ -9,8 +9,6 @@ router.get("/", getAllDocuments )
 //create document
 router.post("/", createDocument)
 
-//authorize user
-router.post("/authorize", authorizeDocumentAccess)
 
 //getting all existing shapes for single document
 router.post("/shapes", getAllShapes)

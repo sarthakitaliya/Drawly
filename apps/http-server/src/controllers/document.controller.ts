@@ -22,7 +22,8 @@ export const getAllDocuments = async(req: Request, res: Response) => {
                     }
                 },
                 members: true,
-                createdAt: true
+                createdAt: true,
+                isCollaborative: true
             }
         })
         res.json({
@@ -43,13 +44,14 @@ export const getAllDocuments = async(req: Request, res: Response) => {
 
 export const createDocument = async(req: Request, res: Response) => {
     try {
-        const {slug} = req.body;
+        const {slug, isCollab} = req.body;
         console.log(slug);
         
         const createDoc = await prismaClient.document.create({
             data: {
                 ownerId: req.user.id,
-                slug: slug || "Untitled"
+                slug: slug || "Untitled",
+                isCollaborative: false,
             }
         }) 
         console.log(createDoc);
