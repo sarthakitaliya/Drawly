@@ -30,7 +30,7 @@ export default function ToolBar({
   
   const connectToRoom = async () => {
     convertToCollab(canva.documentID);
-    connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string);
+    connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string, canva.documentID);
   };
   const onClickDashboard = () => {
     setDocumentID("");
@@ -103,7 +103,7 @@ export default function ToolBar({
         <IconButton
           onClick={connectToRoom}
           icon={<Users />}
-          activated={socket}
+          activated={socket as any}
           className="border border-zinc-500"
           title="Collaborate Mode"
         />

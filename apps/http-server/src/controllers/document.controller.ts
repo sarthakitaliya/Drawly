@@ -8,8 +8,11 @@ export const getAllDocuments = async(req: Request, res: Response) => {
             where: {
                 OR:[
                     {ownerId: req.user.id},
-                    {members: {some: {id: req.user.id}}}
+                    {members: {some: {userId: req.user.id}}}
                 ]
+            },
+            orderBy:{
+                createdAt: "desc"
             },
             select:{
                 id: true,
@@ -45,7 +48,6 @@ export const getAllDocuments = async(req: Request, res: Response) => {
 export const createDocument = async(req: Request, res: Response) => {
     try {
         const {slug, isCollab} = req.body;
-        console.log(slug);
         
         const createDoc = await prismaClient.document.create({
             data: {
@@ -54,7 +56,6 @@ export const createDocument = async(req: Request, res: Response) => {
                 isCollaborative: false,
             }
         }) 
-        console.log(createDoc);
         res.json({
             success: true,
             createDoc,
@@ -103,7 +104,6 @@ export const getAllShapes = async(req: Request, res: Response) => {
 export const addShape = async(req: Request, res: Response) => {
     try {
         const {documentId} = req.body;
-        console.log(req.body);
         
         if(!documentId) {
              res.status(400).json({
@@ -130,7 +130,6 @@ export const addShape = async(req: Request, res: Response) => {
                 height: shape.height,
             }
         })
-        console.log(addShape);
         
         res.json({
             success: true,
@@ -150,7 +149,6 @@ export const addShape = async(req: Request, res: Response) => {
 export const authorizeDocumentAccess = async(req: Request, res: Response) => {
     try {
         const {documentId} = req.body;
-        console.log(req.body);
         
         if(!documentId) {
             res.status(400).json({

@@ -4,8 +4,10 @@ import { Request, Response } from "express";
 export const convertToCollab = async (req: Request, res: Response) => {
     try {
         const {documentId} = req.body;
-        console.log(documentId);
-        
+        if(!documentId){
+            res.status(400).json({success: false, message: "Document id is required"})
+            return;
+        }
         await prismaClient.document.update({
             where:{
                 id: documentId
@@ -40,10 +42,27 @@ export const checkAccess = async (req: Request, res: Response) => {
         if(document){
             if(document.isCollaborative){
                 console.log("Document is collaborative");
+                let member = await prismaClient.member.findFirst({
+                    where:{
+                        documentId: documentId,
+                        userId: req.user.id
+                    }
+                })
+                console.log("Member before creating", member);
+                if(!member){
+                    console.log("User is not a member");
+                    member = await prismaClient.member.create({
+                        data:{
+                            documentId: documentId,
+                            userId: req.user.id
+                        }
+                    })
+                }
+                console.log(member);
                 res.status(200).json({success: true, document})
             }else{
                 console.log("Document is not collaborative");
-                res.status(403).json({success: false, message: "Document is not collaborative"})
+                res.status(200).json({success: true, message: "Document is not collaborative"})
             }
         }else{
             console.log("Document not found");

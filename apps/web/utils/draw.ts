@@ -1,5 +1,6 @@
-
 import { Tool } from "../components/Toolbar";
+import { checkDocumentAccess } from "./SessionStorage";
+import { useSocketStore, useLoadingStore } from "@repo/store";
 
 type Shape =
   | {
@@ -36,34 +37,60 @@ export class Draw {
   private documentID: string;
   private addShape: (shape: Shape, documentID: string) => void;
   private getShapes: (documentId: string) => Shape[];
-
+  private socket: any = null;
+  private isCollaborative: boolean = false;
+  private socketStore: any;
   constructor(
     canvas: HTMLCanvasElement,
     setShapes: (shapes: Shape) => void,
     addShape: (shape: Shape) => void,
     documentID: string,
-    getShapes: (documentId: string) => Shape[]
+    getShapes: (documentId: string) => Shape[],
+    socketStore: any
   ) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.ctx = canvas.getContext("2d")!;
     this.clicked = false;
-    this.initMouseHandlers();
+    this.socketStore = socketStore;
     //initialize state variables
     this.getShapes = getShapes;
     this.existingShapes = [];
     this.setShapes = setShapes;
     this.documentID = documentID;
     this.addShape = addShape;
+    this.socket = this.socketStore.socket;
     this.init();
+    this.initMouseHandlers();
   }
 
   async init() {
-    if(!this.documentID) return;
-    const shapes = await this.getShapes(this.documentID);
-    this.existingShapes = shapes as Shape[];
+    if (!this.documentID) return;
+
+    const res = await checkDocumentAccess(this.documentID);
+    this.isCollaborative = res.isCollab;
+
+    if (this.socket && this.isCollaborative) {
+      this.initSocketEvents();
+    }
+    const shapes = (await this.getShapes(this.documentID)) || [];
+    this.existingShapes = Array.isArray(shapes) ? shapes : [];
+
     this.clearCanvas();
+  }
+  initSocketEvents() {
+    if (!this.isCollaborative || !this.socket) {
+      return;
+    }
+
+    this.socket.on("draw", (data: any) => {
+      if (!data) return;
+      console.log(data);
+      this.existingShapes.push(data);
+      this.clearCanvas();
+      console.log(this.existingShapes);
+    });
   }
 
   setTool(tool: Tool) {
@@ -86,10 +113,10 @@ export class Draw {
       const centerX = shape.x + shape.width / 2;
       const centerY = shape.y + shape.height / 2;
 
-      this.ctx.moveTo(centerX, shape.y); // Top point
-      this.ctx.lineTo(shape.x + shape.width, centerY); // Right point
-      this.ctx.lineTo(centerX, shape.y + shape.height); // Bottom point
-      this.ctx.lineTo(shape.x, centerY); // Left point
+      this.ctx.moveTo(centerX, shape.y); 
+      this.ctx.lineTo(shape.x + shape.width, centerY); 
+      this.ctx.lineTo(centerX, shape.y + shape.height); 
+      this.ctx.lineTo(shape.x, centerY); 
       this.ctx.closePath();
       this.ctx.stroke();
     }
@@ -117,10 +144,10 @@ export class Draw {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#18181B";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     if (!this.existingShapes) return;
-    // console.log("from the draw", this.existingShapes);
-    
+    console.log("from the draw", this.existingShapes);
+
     this.existingShapes.forEach((shape) => {
       if (!shape) return;
 
@@ -170,13 +197,32 @@ export class Draw {
         radiusX: width / 2,
         radiusY: height / 2,
       };
+    }else if (this.selectedTool === "rhombus") {
+      shape = {
+        type: "rhombus",
+        x: this.startX,
+        y: this.startY,
+        width,
+        height,
+      };
     }
 
     if (!shape) {
       return;
     }
+
+    if (this.isCollaborative) {
+      if (!this.socket || !this.socket.connected) {
+        console.log("socket not connected");
+        useLoadingStore.getState().setMsg("Please refresh the page");
+        return;
+      }
+      this.socket.emit("draw", { shape, roomId: this.documentID });
+    } else {
+      console.log("not collaborative");
+      this.addShape(shape, this.documentID);
+    }
     this.existingShapes.push(shape);
-    this.addShape(shape, this.documentID);
     console.log("that is from drawwww", this.documentID);
   };
 
@@ -218,5 +264,8 @@ export class Draw {
     this.canvas.removeEventListener("mousedown", this.mouseDownHanler);
     this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
+    if (this.socket) {
+      this.socket.disconnect();
+    }
   }
 }

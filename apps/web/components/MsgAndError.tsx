@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useLoadingStore } from "@repo/store";
 
-const ErrorHandler = () => {
+const MsgAndError = () => {
   const { error, setError, msg, setMsg } = useLoadingStore();
 
   useEffect(() => {
@@ -20,4 +20,4 @@ const ErrorHandler = () => {
   return null;
 };
 
-export default ErrorHandler;
+export default MsgAndError;

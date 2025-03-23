@@ -1,4 +1,3 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth/";
 import GoogleProvider from "next-auth/providers/google";
 import { prismaClient } from "@repo/db/client";
@@ -17,16 +16,12 @@ export const authOption: NextAuthOptions = {
     maxAge: 7 * 24 * 60 * 60, 
   },
   jwt:{
-    encode: async(params: {
-      token: JWT;
-      secret: string;
-    }) => {
-      return jwt.sign(params.token, params.secret, {algorithm: "HS256"});
+    encode: async({token, secret}) => {
+      //@ts-ignore
+      return jwt.sign(token, secret, {algorithm: "HS256"});
     },
-    decode: (params: {
-      token: string;
-      secret: string;
-    }) => {
+    decode: (params) => {
+      //@ts-ignore
       return jwt.verify(params.token, params.secret) as JWT;
     }
   },

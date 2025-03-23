@@ -2,6 +2,7 @@ import { api } from "@repo/utils/api";
 import { io, Socket } from "socket.io-client";
 import { create } from "zustand";
 import { useLoadingStore } from "./useLoadingStore";
+import { useCanvasStore } from "./useCanvasStore";
 
 export const useSocketStore = create<SocketStore>((set, get) => ({
   socket: null,
@@ -9,66 +10,87 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   convertToCollab: async (documentId: string) => {
     try {
       const cachedDocuments = JSON.parse(
-        sessionStorage.getItem("documentIds") || "[]"
+        localStorage.getItem("documentIds") || "[]"
       );
       const findId = cachedDocuments.find((doc: any) => doc.id === documentId);
       if (findId.isCollaborative) {
         useLoadingStore.getState().setMsg("Document is already collaborative");
         return;
       }
-      console.log(documentId);
 
-      await api.post("/room/collab", { documentId });
+      const res = await api.post("/room/collab", { documentId });
+      if (!res.data.success) {
+        useLoadingStore.getState().setMsg("Failed to convert to collaborative");
+        return;
+      }
       cachedDocuments.map((doc: any) => {
         if (doc.id === documentId) {
           doc.isCollaborative = true;
         }
       });
-      sessionStorage.setItem("documentIds", JSON.stringify(cachedDocuments));
+      localStorage.setItem("documentIds", JSON.stringify(cachedDocuments));
     } catch (error) {
       console.log(error);
     }
   },
-  connectToSocket: (url) => {
-    if (get().socket){
-      useLoadingStore.getState().setMsg("You are already connected");
+  connectToSocket: (url, documentId) => {
+    
+    if (get().isConnected || get().socket) {
+      useLoadingStore.getState().setMsg("Already connected to socket");
       return;
     }
-    console.log("Connecting to socket");
+
+    if(!documentId) {
+      useLoadingStore.getState().setMsg("Document id is required");
+      return;
+    }
 
     const socket = io(url, {
       withCredentials: true,
+      query: { roomId: documentId },
+      transports: ["websocket"],
     });
+    
     socket.on("connect", () => {
-      console.log("Connected to socket")
+      console.log("Socket connected successfully");
       set({ socket, isConnected: true });
+      useCanvasStore.getState().setIsCollaborative(true);
     });
-    socket.on("disconnect", () => {
+
+    socket.emit("join-room", documentId);
+
+    socket.on("user-joined", (users) => {
+      useLoadingStore.getState().setMsg(`user joined ${users.name}`);
+    });
+
+    socket.on("user-left", (data) => {
+      useLoadingStore.getState().setMsg(`${data.name} left`);
+    });
+
+    socket.on("disconnect", (resone) => {
       console.log("Disconnected from socket")
+      console.log(resone);
+      
       set({ socket: null, isConnected: false });
     });
     socket.on("connect_error", (error) => { 
-      console.log(error);
+      console.log(error.message);
+      set({ socket: null, isConnected: false });
     });
     socket.on("error", (error) => {
       console.log(error);
+      set({ socket: null, isConnected: false });
     });
+    return socket;
+
   },
-  joinRoom: (roomId) => {
-    const { socket } = get();
-    if (socket) {
-      socket.send(JSON.stringify({ type: "joinRoom", payload: { roomId } }));
-    }
-  },
-  sendDrawingData: (data) => {
-    const { socket } = get();
-    if (socket) {
-      socket.send(JSON.stringify({ type: "draw", payload: data }));
-    }
+  setSocket: (socket) => {
+    set({ socket });
   },
   disconnect: () => {
     const { socket } = get();
     if (socket) {
+      socket.removeAllListeners();
       socket.disconnect();
       set({ socket: null, isConnected: false });
     }
@@ -84,10 +106,9 @@ type Element = {
 };
 interface SocketStore {
   socket: Socket | null;
-  connectToSocket: (url: string) => void;
-  joinRoom: (roomId: string) => void;
-  sendDrawingData: (data: Element) => void;
+  isConnected: boolean;
+  connectToSocket: (url: string, documentId: string) => any;
+  setSocket: (socket: Socket) => void
   convertToCollab: (documentId: string) => void;
   disconnect: () => void;
-  isConnected: boolean;
 }

@@ -14,6 +14,7 @@ export function timeAgo(timestamp: string) {
     };
 
     for (const key in intervals) {
+        //@ts-ignore
         const interval = Math.floor(seconds / intervals[key]);
         if (interval >= 1) {
             return `${interval} ${key}${interval !== 1 ? "s" : ""} ago`;

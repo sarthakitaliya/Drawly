@@ -1,15 +1,15 @@
 "use client";
-import { useUserStore, useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
+import {  useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
 import Navbar from "../../../components/Navbar";
 import Card from "../../../components/Card";
-import { Plus, Users, LogIn } from "lucide-react";
+import { Plus, LogIn } from "lucide-react";
 import Document from "../../../components/Document";
 import { useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
 import { redirect } from "next/navigation";
 import { timeAgo } from "../../../utils/timeAgo";
-import { getToken } from "next-auth/jwt";
+
 
 interface documentType {
   id: string;
@@ -21,12 +21,11 @@ interface documentType {
   };
   members: {
     id: string;
-    name: string;
+    name: string; 
   }[];
   createdAt: string;
 }
 export default function Dashboard() {
-  const { setUser, user } = useUserStore();
   const { setError, loading, setLoading, error } = useLoadingStore();
   const {connectToSocket} = useSocketStore();
   const { createDocument, documentID, setDocumentID } = useCanvasStore();
@@ -88,7 +87,7 @@ export default function Dashboard() {
     if (type === "create") {
       createDocument(inputText);
     }else if (type === "join") {
-      connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string);
+      connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string, inputText);
       setDocumentID(inputText);
     }
   };

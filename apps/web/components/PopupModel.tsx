@@ -1,7 +1,6 @@
 "use client"
 import { useLoadingStore } from "@repo/store";
 import { Loader } from "lucide-react";
-import { JSX, useEffect, useState } from "react";
 
 interface popupModel {
   isOpen: boolean;

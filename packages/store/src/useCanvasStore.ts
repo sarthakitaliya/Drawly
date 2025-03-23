@@ -5,6 +5,10 @@ import { useLoadingStore } from "./useLoadingStore";
 export const useCanvasStore = create<CanvasStore>((set, get) => ({
   shapes: [],
   documentID: "",
+  isCollaborative: false,
+  setIsCollaborative: (isCollaborative: boolean) => {
+    set({ isCollaborative });
+  },
   setDocumentID: (id: string) => {
     set({ documentID: id });
   },
@@ -13,12 +17,12 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       useLoadingStore.getState().setLoading(true);
       const ids = JSON.parse(sessionStorage.getItem("documentIds") || "[]");  
       
-      const res = await api.post<response>("/documents", {
+      const res = await api.post("/documents", {
         slug,
       });
       if (res.data.success === true) {
-        ids.push({ id: res.data.createDoc.id, isCollaborative: res.data.createDoc.isCollaborative, ownerId: res.data.createDoc.ownerId });
-        sessionStorage.setItem("documentIds", JSON.stringify(ids));
+        ids.push({ id: res.data.createDoc.id, isCollaborative: res.data.createDoc.isCollaborative });
+        localStorage.setItem("documentIds", JSON.stringify(ids));
         set({ documentID: res.data.createDoc.id }); 
         
       }
@@ -29,7 +33,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       useLoadingStore.getState().setLoading(false);
     }
   },
-  addShape: async (shape: Shape, documentId: string) => {
+  addShape: async (shape, documentId) => {
 
     try {
       console.log("from the addShape",get().documentID);
@@ -69,39 +73,28 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         documentId,
       });
       if (res.data.success === true) {
-        // console.log("Shapes fetched successfully");
-        // console.log(res.data);
         return res.data.shapes;
         
       }
       useLoadingStore.getState().setLoading(false);
     } catch (error) {
       console.log(error);
-      console.log(error.response);
       useLoadingStore.getState().setError("Internal server error");
       useLoadingStore.getState().setLoading(false);
     }
   },
 }));
 
-interface response {
-  success: boolean;
-  createDoc: {
-    id: string;
-    ownerId: string;
-    slug: string;
-  };
-  message: string;
-  isCollaborative: boolean;
-}
 interface CanvasStore {
   createDocument: (slug: string) => void;
   documentID: string;
+  isCollaborative: boolean;
+  setIsCollaborative: (isCollaborative: boolean) => void;
   setDocumentID: (id: string) => void;
   shapes: Shape[];
-  addShape: (shape: Shape) => void;
+  addShape: (shape: Shape, documentId: string) => void;
   setShapes: (shapes: Shape) => void;
-  getShapes: (documentId: string) => Promise<Shape[] | null>;
+  getShapes: (documentId: string) => Promise<Shape[] | []>;
 }
 
 interface Shape {

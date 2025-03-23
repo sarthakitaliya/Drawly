@@ -22,7 +22,7 @@ export default function Document({
       <h1 className="flex-1 text-center">{author}</h1>
       <div className="flex-2 text-right">
         <div className="flex justify-end">
-          {members.map((index) => (
+          {members.map((i, index) => (
             <div key={index}>s</div>
           ))}
         </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiExcalidraw } from "react-icons/si";
 
-export default function signinPage() {
+export default function SigninPage() {
   const { data: session, status } = useSession();
   if (status == "loading") return <h1>Loading...</h1>;
   if (session) {

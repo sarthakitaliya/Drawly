@@ -5,8 +5,7 @@ import { useSession } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
-import axios from "axios";
-import ErrorHandler from "../../components/ErrorHandle";
+import MsgHandler from "../../components/MsgAndError";
 import { setSessionStorage } from "../../utils/SessionStorage";
 
 
@@ -15,7 +14,7 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, setUser } = useUserStore();
+  const { setUser } = useUserStore();
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -43,7 +42,7 @@ export default function ProtectedLayout({
   return (
     <>
       <Toaster />
-      <ErrorHandler />
+      <MsgHandler />
       {children}
     </>
   );
