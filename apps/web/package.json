@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
+    "postinstall": "npx prisma generate --schema=../../packages/db/prisma/schema.prisma",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",

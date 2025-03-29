@@ -7,7 +7,7 @@ import Document from "../../../components/Document";
 import { useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
-import { redirect } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import { timeAgo } from "../../../utils/timeAgo";
 
 
@@ -28,6 +28,9 @@ interface documentType {
 export default function Dashboard() {
   const { setError, loading, setLoading, error } = useLoadingStore();
   const {connectToSocket} = useSocketStore();
+  const param = useSearchParams();  
+  console.log(param.get("dashboard"));
+  
   const { createDocument, documentID, setDocumentID } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<"create" | "join" | "none">(
@@ -151,3 +154,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
+// export const dynamic = "force-dynamic";
+
+// export const revalidate = 60;
