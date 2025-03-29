@@ -2,6 +2,7 @@
   "name": "Drawly",
   "private": true,
   "scripts": {
+    "postinstall": "npx prisma generate --schema=packages/db/prisma/schema.prisma",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
@@ -16,5 +17,9 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@prisma/client": "6.4.1",
+    "prisma": "^6.4.1"
   }
 }
