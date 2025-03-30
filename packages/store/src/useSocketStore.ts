@@ -74,6 +74,8 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       set({ socket: null, isConnected: false });
     });
     socket.on("connect_error", (error) => { 
+      console.log(error);
+      
       console.log(error.message);
       set({ socket: null, isConnected: false });
     });

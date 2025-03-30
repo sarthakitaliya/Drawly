@@ -6,13 +6,15 @@ import { prismaClient } from "@repo/db/client";
 dotenv.config();
 const io = new Server(4000, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.ORIGIN_URL ||"http://localhost:3000",
     credentials: true,
   },
 });
 const roomUsers: Record<string, { id: string; name: string }[]> = {};
 
 io.use((socket, next) => {
+  console.log("hi");
+  
   try {
     console.log("Socket Auth");
     const rawCookies = socket.handshake.headers.cookie || "";
@@ -28,6 +30,8 @@ io.use((socket, next) => {
     socket.data.user = user;
     next();
   } catch (error) {
+    console.log(error);
+    
     console.error("WebSocket Authentication Failed:", error);
     next(new Error("Unauthorized"));
   }
