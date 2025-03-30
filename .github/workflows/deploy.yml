@@ -10,15 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: SSH into VM and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/Drawly
+            git pull origin main
+            pnpm install
+            
+            # Express Server (http-server)
+            cd http-server
+            pnpm run build
+            pm2 restart http-server
 
-        - name: SSH into VM
-          run: |
-            mkdir -p ~/.ssh
-            echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/.ssh/ssh_key
-            sudo chmod 700 ~/.ssh
-            sudo chmod 600 ~/.ssh/ssh_key
-            ls -la ~/.ssh
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key ubuntu@${{secrets.HOST}} "echo 'SSH connection successful'"
-      
+            # WebSocket Server (ws-server)
+            cd ../ws-server
+            pnpm run build
+            pm2 restart ws-server
