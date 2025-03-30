@@ -16,5 +16,5 @@ jobs:
       - name: checking out code
         run: |
             echo "Checking out code from the main branch"
-            encho "${{secrets.SSH_PRIVATE_KEY}}"
-            encho "${{secrets.HOST}}"
+            echo "${{secrets.SSH_PRIVATE_KEY}}"
+            echo "${{secrets.HOST}}"
