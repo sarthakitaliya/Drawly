@@ -12,26 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: SSH into VM and deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu/Drawly
-            git pull origin main
-            pnpm install
-            
-            # Express Server (http-server)
-            cd http-server
-            npx prisma generate  # Ensure Prisma client is up to date
-            npx prisma migrate deploy  # Apply migrations (if needed)
-            pnpm run build
-            pm2 restart http-server
-
-            # WebSocket Server (ws-server)
-            cd ../ws-server
-            pnpm run build
-            pm2 restart ws-server
+        
+      - name: checking out code
+        run: |
+            echo "Checking out code from the main branch"
+            encho "${{secrets.SSH_PRIVATE_KEY}}"
+            encho "${{secrets.HOST}}"
