@@ -22,7 +22,7 @@ app.use(cors({
 app.get("/", protectRoute, (req, res) => {
     console.log(req.user);
     
-    res.json("hii");
+    res.json("hello");
 })
 
 
