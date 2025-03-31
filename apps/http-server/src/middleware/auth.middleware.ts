@@ -8,7 +8,7 @@ interface DecodedToken extends JwtPayload{
 export const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        const token = req.cookies["next-auth.session-token"]
+        const token = req.cookies["next-auth.session-token"] || req.cookies["__Secure-next-auth.session-token"];
         
         if(!token){
             res.status(401).json({message: "JWT must be provided"});
