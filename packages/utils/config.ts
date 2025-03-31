@@ -1,1 +1,1 @@
-export const API_URL = "http://drawly-api.sarthak-dev.me"; 
+export const API_URL = "https://drawly-api.sarthak-dev.me/api"; 
