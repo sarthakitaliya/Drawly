@@ -21,6 +21,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            export PATH=$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.npm-global/bin:$PATH
+            
+            # Debugging: Check if pnpm and pm2 are available
+            which pnpm
+            which pm2
+          
             cd /home/ubuntu/Drawly
             git pull origin main
             pnpm install
