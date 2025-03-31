@@ -26,7 +26,8 @@ jobs:
             # Debugging: Check if pnpm and pm2 are available
             which pnpm
             which pm2
-          
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
             cd /home/ubuntu/Drawly
             git pull origin main
             pnpm install
