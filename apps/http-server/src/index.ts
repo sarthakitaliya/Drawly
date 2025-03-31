@@ -19,7 +19,7 @@ app.use(cors({
     credentials: true
 }));
 
-app.get("/", protectRoute, (req, res) => {
+app.get("/", (req, res) => {
     console.log(req.user);
     
     res.json("hello");
