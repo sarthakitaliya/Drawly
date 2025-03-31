@@ -34,9 +34,9 @@ jobs:
             # Express Server (http-server)
             cd apps/http-server
             pnpm run build
-            pm2 restart http-server
+            pm2 restart api
 
             # WebSocket Server (ws-server)
             cd ../ws-server
             pnpm run build
-            pm2 restart ws-server
+            pm2 restart ws
