@@ -24,7 +24,7 @@ jobs:
             cd /home/ubuntu/Drawly
             git pull origin main
             pnpm install
-            
+            echo pwd
             # Express Server (http-server)
             cd http-server
             pnpm run build
