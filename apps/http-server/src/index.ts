@@ -1,5 +1,4 @@
-
-import express from "express"
+import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import jwt from "jsonwebtoken";
@@ -13,22 +12,28 @@ dotenv.config();
 const app = express();
 
 app.use(cookieParser());
-app.use(express.json())
-app.use(cors({
-    origin:  process.env.FRONTEND_URL|| "http://localhost:3000", 
-    credentials: true
-}));
+app.use(express.json());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.use((req, res, next) => {
+  console.log("here is the cookie from middleware", req.headers.cookie);
+  next();
+});
 
 app.get("/", (req, res) => {
-    console.log(req.user);
-    
-    res.json("hello");
-})
+  console.log(req.user);
 
+  res.json("hello");
+});
 
-app.use("/api/documents", protectRoute,  documentRoute)
-app.use("/api/room", protectRoute,  roomRoute)
-
+app.use("/api/documents", protectRoute, documentRoute);
+app.use("/api/room", protectRoute, roomRoute);
 
 app.listen(3001);
-
