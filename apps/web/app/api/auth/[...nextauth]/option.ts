@@ -15,6 +15,7 @@ export const authOption: NextAuthOptions = {
     strategy: "jwt", 
     maxAge: 7 * 24 * 60 * 60, 
   },
+  useSecureCookies: process.env.NEXT_PUBLIC_NODE_ENV === "production",
   jwt:{
     encode: async({token, secret}) => {
       //@ts-ignore

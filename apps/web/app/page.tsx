@@ -13,7 +13,7 @@ export default async function Home() {
     <div className="bg-red">
       <h1 className="text-2xl bg-amber-200">Here will be the landing page</h1>
       <Link href="/api/auth/signin">
-      <button>Signin</button>
+      <button>Signin {process.env.NEXT_PUBLIC_NODE_ENV}</button>
       </Link>
     </div>
   );
