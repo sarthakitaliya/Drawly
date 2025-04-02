@@ -12,19 +12,31 @@ export const authOption: NextAuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt", 
-    maxAge: 7 * 24 * 60 * 60, 
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
   },
-  useSecureCookies:true,
-  jwt:{
-    encode: async({token, secret}) => {
+  useSecureCookies: true,
+  cookies: {
+    sessionToken: {
+      name: "__Secure-next-auth.session-token",
+      options: {
+        httpOnly: true,
+        secure: true, // ✅ Must be true for HTTPS
+        sameSite: "none", // ✅ Required for cross-origin requests
+        domain: ".sarthak-dev.me", // ✅ Allow cookies to be accessible from all subdomains
+        path: "/",
+      },
+    },
+  },
+  jwt: {
+    encode: async ({ token, secret }) => {
       //@ts-ignore
-      return jwt.sign(token, secret, {algorithm: "HS256"});
+      return jwt.sign(token, secret, { algorithm: "HS256" });
     },
     decode: (params) => {
       //@ts-ignore
       return jwt.verify(params.token, params.secret) as JWT;
-    }
+    },
   },
   callbacks: {
     async jwt({ token, user, account }) {
