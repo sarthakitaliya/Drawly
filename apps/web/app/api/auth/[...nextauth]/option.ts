@@ -21,7 +21,7 @@ export const authOption: NextAuthOptions = {
       options: {
         httpOnly: true,
         secure: process.env.NODE_ENV == "production",
-        sameSite: "none", 
+        sameSite: "none",
         domain: ".sarthak-dev.me",
         path: "/",
       },
