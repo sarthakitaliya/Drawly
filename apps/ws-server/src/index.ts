@@ -22,16 +22,16 @@ io.use((socket, next) => {
     
     const rawCookies = socket.handshake.headers.cookie;
     if (!rawCookies) {
-      throw new Error("No cookies found");
+      return next(new Error("No cookies found"));
     }
-    
+
     const token = rawCookies
       .split("; ")
       .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
       ?.split("=")[1];
     console.log("token", token);
     if (!token) {
-      throw new Error("Authentication error");
+      return next(new Error("Authentication error"));
     }
     const user = jwt.verify(token, process.env.JWT_SECRET as string);
     socket.data.user = user;
