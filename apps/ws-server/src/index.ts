@@ -20,7 +20,11 @@ io.use((socket, next) => {
     console.log("Socket Auth");
     console.log("Socket Handshake Headers:", socket.handshake.headers);
     
-    const rawCookies = socket.handshake.headers.cookie || "";
+    const rawCookies = socket.handshake.headers.cookie;
+    if (!rawCookies) {
+      throw new Error("No cookies found");
+    }
+    
     const token = rawCookies
       .split("; ")
       .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
