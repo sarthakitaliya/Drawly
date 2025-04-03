@@ -28,14 +28,14 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "tailwindcss": "^4.0.9",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "@repo/typescript-config": "workspace:*"
   },
   "devDependencies": {
     "@prisma/client": "6.4.1",
     "@repo/db": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/store": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
     "@repo/utils": "workspace:*",
     "@types/node": "^22",
     "@types/react": "19.0.8",

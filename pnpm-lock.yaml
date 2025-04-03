@@ -69,6 +69,9 @@ importers:
       '@next-auth/prisma-adapter':
         specifier: ^1.0.7
         version: 1.0.7(@prisma/client@6.4.1(prisma@6.5.0(typescript@5.7.3))(typescript@5.7.3))(next-auth@4.24.11(next@15.2.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -130,9 +133,6 @@ importers:
       '@repo/store':
         specifier: workspace:*
         version: link:../../packages/store
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
       '@repo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
