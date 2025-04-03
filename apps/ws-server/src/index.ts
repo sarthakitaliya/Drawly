@@ -18,6 +18,8 @@ io.use((socket, next) => {
   console.log("Handshake Headers:", socket.handshake.headers);
   try {
     console.log("Socket Auth");
+    console.log("Socket Handshake Headers:", socket.handshake.headers);
+    
     const rawCookies = socket.handshake.headers.cookie || "";
     const token = rawCookies
       .split("; ")
