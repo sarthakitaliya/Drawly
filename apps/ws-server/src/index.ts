@@ -8,7 +8,7 @@ const io = new Server(4000, {
   cors: {
     origin: process.env.ORIGIN_URL ||"http://localhost:3000",
     credentials: true,
-    allowedHeaders: ["Authorization", "Content-Type"],
+    allowedHeaders: ["Authorization", "Content-Type", "Set-Cookie"],
   },
 });
 const roomUsers: Record<string, { id: string; name: string }[]> = {};
