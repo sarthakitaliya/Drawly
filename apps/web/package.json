@@ -40,9 +40,6 @@
     "@repo/store": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@types/node": "^22",
-    "@types/react": "19.0.8",
-    "@types/react-dom": "19.0.3",
     "eslint": "^9.20.0",
     "prisma": "^6.4.1",
     "typescript": "5.7.3"
