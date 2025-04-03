@@ -30,13 +30,16 @@ jobs:
             source ~/.nvm/nvm.sh
             cd /home/ubuntu/Drawly
             git pull origin main
-            pnpm install
+            pnpm install --ignore-scripts
             # Express Server (http-server)
             cd apps/http-server
             pnpm run build
-            pm2 restart api
 
             # WebSocket Server (ws-server)
             cd ../ws-server
-            pnpm run build
-            pm2 restart ws
+            pnpm run build --ignore-scripts
+
+            cd ../../packages/db
+            npx prisma generate 
+
+            pm2 restart all 
