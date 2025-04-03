@@ -12,19 +12,30 @@ export const authOption: NextAuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt", 
-    maxAge: 7 * 24 * 60 * 60, 
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
   },
-  
-  jwt:{
-    encode: async({token, secret}) => {
+  cookies: {
+    sessionToken: {
+      name: "__Secure-next-auth.session-token",
+      options: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV == "production",
+        sameSite: "none", 
+        domain: ".sarthak-dev.me",
+        path: "/",
+      },
+    },
+  },
+  jwt: {
+    encode: async ({ token, secret }) => {
       //@ts-ignore
-      return jwt.sign(token, secret, {algorithm: "HS256"});
+      return jwt.sign(token, secret, { algorithm: "HS256" });
     },
     decode: (params) => {
       //@ts-ignore
       return jwt.verify(params.token, params.secret) as JWT;
-    }
+    },
   },
   callbacks: {
     async jwt({ token, user, account }) {
