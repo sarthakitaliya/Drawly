@@ -13,30 +13,30 @@ const io = new Server(4000, {
 });
 const roomUsers: Record<string, { id: string; name: string }[]> = {};
 
-// io.use((socket, next) => {
-//   console.log("hi");
-//   console.log("Handshake Headers:", socket.handshake.headers);
-//   try {
-//     console.log("Socket Auth");
-//     const rawCookies = socket.handshake.headers.cookie || "";
-//     const token = rawCookies
-//       .split("; ")
-//       .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
-//       ?.split("=")[1];
-//     console.log("token", token);
-//     if (!token) {
-//       throw new Error("Authentication error");
-//     }
-//     const user = jwt.verify(token, process.env.JWT_SECRET as string);
-//     socket.data.user = user;
-//     next();
-//   } catch (error) {
-//     console.log(error);
+io.use((socket, next) => {
+  console.log("hi");
+  console.log("Handshake Headers:", socket.handshake.headers);
+  try {
+    console.log("Socket Auth");
+    const rawCookies = socket.handshake.headers.cookie || "";
+    const token = rawCookies
+      .split("; ")
+      .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
+      ?.split("=")[1];
+    console.log("token", token);
+    if (!token) {
+      throw new Error("Authentication error");
+    }
+    const user = jwt.verify(token, process.env.JWT_SECRET as string);
+    socket.data.user = user;
+    next();
+  } catch (error) {
+    console.log(error);
     
-//     console.error("WebSocket Authentication Failed:", error);
-//     next(new Error("Unauthorized"));
-//   }
-// });
+    console.error("WebSocket Authentication Failed:", error);
+    next(new Error("Unauthorized"));
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("User connected");
