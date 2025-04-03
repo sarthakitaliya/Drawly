@@ -21,7 +21,7 @@ io.use((socket, next) => {
     const rawCookies = socket.handshake.headers.cookie || "";
     const token = rawCookies
       .split("; ")
-      .find((cookie) => cookie.startsWith("next-auth.session-token="))
+      .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
       ?.split("=")[1];
     console.log("token", token);
     if (!token) {
