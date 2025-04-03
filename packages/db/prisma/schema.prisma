@@ -21,38 +21,37 @@ model Document {
   id              String   @id @default(cuid())
   slug            String   @default("Untitled")
   ownerId         String
+  createdAt       DateTime @default(now())
+  isCollaborative Boolean  @default(false)
   owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members         Member[]
   shapes          Shape[]
-  isCollaborative Boolean @default(false)
-  createdAt       DateTime @default(now())
 }
-
 
 model Member {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documentId    String
-  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  role   Role   @default(EDITOR)
-}
-
-enum Role {
-  OWNER
-  EDITOR
-  VIEWER
+  id         String   @id @default(cuid())
+  userId     String
+  role       Role     @default(EDITOR)
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Shape {
   id         String   @id @default(cuid())
   documentId String
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  type       String 
+  type       String
   x          Float
   y          Float
   width      Float?
   height     Float?
   color      String   @default("#FFFFFF")
   createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
 }

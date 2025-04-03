@@ -8,13 +8,14 @@ const io = new Server(4000, {
   cors: {
     origin: process.env.ORIGIN_URL ||"http://localhost:3000",
     credentials: true,
+    allowedHeaders: ["Authorization", "Content-Type"],
   },
 });
 const roomUsers: Record<string, { id: string; name: string }[]> = {};
 
 io.use((socket, next) => {
   console.log("hi");
-  
+  console.log("Handshake Headers:", socket.handshake.headers);
   try {
     console.log("Socket Auth");
     const rawCookies = socket.handshake.headers.cookie || "";
