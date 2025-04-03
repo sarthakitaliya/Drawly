@@ -8,6 +8,7 @@ const io = new Server(4000, {
   cors: {
     origin: process.env.ORIGIN_URL ||"http://localhost:3000",
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   },
 });
 const roomUsers: Record<string, { id: string; name: string }[]> = {};
@@ -22,7 +23,7 @@ io.use((socket, next) => {
       .split("; ")
       .find((cookie) => cookie.startsWith("next-auth.session-token="))
       ?.split("=")[1];
-
+    console.log("token", token);
     if (!token) {
       throw new Error("Authentication error");
     }

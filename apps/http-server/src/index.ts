@@ -22,11 +22,6 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  console.log("here is the cookie from middleware", req.cookies);
-  next();
-});
-
 app.get("/", (req, res) => {
   console.log(req.user);
 
