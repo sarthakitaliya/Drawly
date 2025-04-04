@@ -20,9 +20,10 @@ export const authOption: NextAuthOptions = {
       name: process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token",
       options: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: true,
+        sameSite: "none",
         path: "/",
+        domain: process.env.NODE_ENV === "production" ? ".sarthak-dev.me" : "http://localhost:3001",
       },
     },
   },
