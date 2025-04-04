@@ -16,6 +16,9 @@ const roomUsers: Record<string, { id: string; name: string }[]> = {};
 io.use((socket, next) => {
   console.log("hi");
   console.log("Handshake Headers:", socket.handshake.headers);
+  console.log("Socket Handshake Query:", socket.handshake.query);
+  
+  
   try {
     console.log("Socket Auth");
     console.log("Socket Handshake Headers:", socket.handshake.headers);
