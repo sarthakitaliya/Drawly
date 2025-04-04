@@ -22,14 +22,6 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  console.log("Request Headers:", req.headers);
-  console.log("Request Cookies:", req.cookies);
-  console.log("Request Origin:", req.headers.origin);
-  console.log("Request Host:", req.headers.host);
-  next();
-});
-
 app.get("/", (req, res) => {
   console.log(req.user);
 
