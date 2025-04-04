@@ -15,8 +15,6 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
             token = req.cookies["next-auth.session-token"];
         }
         
-        console.log("token", token);
-        console.log("req.cookies", req.cookies);
         
         if(!token){
             res.status(401).json({message: "JWT must be provided"});
