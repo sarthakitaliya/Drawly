@@ -37,7 +37,7 @@ jobs:
 
             # WebSocket Server (ws-server)
             cd ../ws-server
-            pnpm run build --ignore-scripts
+            pnpm run build
 
             cd ../../packages/db
             npx prisma generate 
