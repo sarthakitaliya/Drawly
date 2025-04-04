@@ -18,13 +18,16 @@ app.use(
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 
 app.use((req, res, next) => {
   console.log("Request Headers:", req.headers);
   console.log("Request Cookies:", req.cookies);
+  console.log("Request Origin:", req.headers.origin);
+  console.log("Request Host:", req.headers.host);
   next();
 });
 
