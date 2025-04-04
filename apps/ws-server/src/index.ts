@@ -48,7 +48,11 @@ io.use((socket, next) => {
 
   const token = authCookie.split("=")[1];
   console.log("7. Token Present:", !!token);
-
+  if(!token) {
+    console.log("8. Error: No token found");  
+    return next(new Error("Authentication error - No token found"));
+  }
+  console.log("Token:", token);
   try {
     console.log("8. Attempting to verify token");
     const user = jwt.verify(token, process.env.JWT_SECRET as string);
