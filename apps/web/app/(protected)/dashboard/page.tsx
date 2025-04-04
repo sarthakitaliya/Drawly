@@ -26,7 +26,7 @@ interface documentType {
   createdAt: string;
 }
 export default function Dashboard() {
-  const { setError, loading, setLoading, error } = useLoadingStore();
+  const { setError, loading, setLoading } = useLoadingStore();
   const {connectToSocket} = useSocketStore();
   const param = useSearchParams();  
   console.log(param.get("dashboard"));
@@ -117,9 +117,6 @@ export default function Dashboard() {
           <h1 className="flex-2 text-right">MEMBERS</h1>
         </div>
         <div className="flex flex-col justify-between items-center">
-          {error && (
-            <h1 className="text-white text-2xl mt-10">{error}</h1>
-          )}
           {loading && (
             <h1 className="text-white text-2xl mt-10">Loading...</h1>
           )}
@@ -155,6 +152,3 @@ export default function Dashboard() {
   );
 }
 
-// export const dynamic = "force-dynamic";
-
-// export const revalidate = 60;

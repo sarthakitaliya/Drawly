@@ -23,7 +23,7 @@ export const authOption: NextAuthOptions = {
         secure: true,
         sameSite: "none",
         path: "/",
-        domain: process.env.NODE_ENV === "production" ? ".sarthak-dev.me" : "http://localhost:3001",
+        domain: process.env.NODE_ENV === "production" ? ".sarthak-dev.me" : undefined,
       },
     },
   },

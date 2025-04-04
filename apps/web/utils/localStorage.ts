@@ -1,6 +1,6 @@
 import { api } from "@repo/utils/api";
 
-export const setSessionStorage = async () => {
+export const setLocalStorage = async () => {
   try {
     const documents = await fetchDocuments();
     if (!documents) return;

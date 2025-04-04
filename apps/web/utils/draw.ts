@@ -1,5 +1,5 @@
 import { Tool } from "../components/Toolbar";
-import { checkDocumentAccess } from "./SessionStorage";
+import { checkDocumentAccess } from "./localStorage";
 import { useSocketStore, useLoadingStore } from "@repo/store";
 
 type Shape =

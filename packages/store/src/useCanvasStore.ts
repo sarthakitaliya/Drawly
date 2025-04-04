@@ -15,7 +15,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   createDocument: async (slug: string) => {
     try {
       useLoadingStore.getState().setLoading(true);
-      const ids = JSON.parse(sessionStorage.getItem("documentIds") || "[]");  
+      const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");  
       
       const res = await api.post("/documents", {
         slug,

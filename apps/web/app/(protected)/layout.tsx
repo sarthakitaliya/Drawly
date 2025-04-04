@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import MsgHandler from "../../components/MsgAndError";
-import { setSessionStorage } from "../../utils/SessionStorage";
+import { setLocalStorage } from "../../utils/localStorage";
 
 
 export default function ProtectedLayout({
@@ -19,7 +19,7 @@ export default function ProtectedLayout({
 
   useEffect(() => {
     if(session?.user && status == "authenticated") {
-      setSessionStorage();  
+      setLocalStorage();  
       const user = session.user as {
         id: string;
         name: string;

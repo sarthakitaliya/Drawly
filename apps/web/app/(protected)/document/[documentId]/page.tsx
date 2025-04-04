@@ -5,7 +5,7 @@ import { Draw } from "../../../../utils/draw";
 import { useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
 import {
   checkDocumentAccess,
-} from "../../../../utils/SessionStorage";
+} from "../../../../utils/localStorage";
 import { redirect } from "next/navigation";
 
 export default function CanvasPage() {
