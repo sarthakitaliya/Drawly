@@ -14,37 +14,52 @@ const io = new Server(4000, {
 const roomUsers: Record<string, { id: string; name: string }[]> = {};
 
 io.use((socket, next) => {
-  console.log("hi");
-  console.log("Handshake Headers:", socket.handshake.headers);
-  console.log("Socket Handshake Query:", socket.handshake.query);
+  // Log everything first before any checks
+  console.log("=== Debug Logging Start ===");
+  console.log("1. Full Handshake:", {
+    headers: socket.handshake.headers,
+    query: socket.handshake.query,
+    auth: socket.handshake.auth
+  });
   
+  const rawCookies = socket.handshake.headers.cookie;
+  console.log("2. Raw Cookies:", rawCookies);
   
-  try {
-    console.log("Socket Auth");
-    console.log("Socket Handshake Headers:", socket.handshake.headers);
-    
-    const rawCookies = socket.handshake.headers.cookie;
-    if (!rawCookies) {
-      return next(new Error("No cookies found"));
-    }
+  if (!rawCookies) {
+    console.log("3. Error: No cookies found in request");
+    return next(new Error("No cookies found"));
+  }
 
-    const token = rawCookies
-      .split("; ")
-      .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
-      ?.split("=")[1];
-    console.log("token", token);
-    if (!token) {
-      return next(new Error("Authentication error"));
-    }
+  // Split and log all cookies
+  const cookies = rawCookies.split("; ");
+  console.log("4. All Cookies:", cookies);
+
+  // Look for auth token
+  const authCookie = cookies.find(
+    cookie => cookie.startsWith("next-auth.session-token=") || 
+              cookie.startsWith("__Secure-next-auth.session-token=")
+  );
+  console.log("5. Auth Cookie Found:", authCookie || "none");
+
+  if (!authCookie) {
+    console.log("6. Error: No auth cookie found");
+    return next(new Error("Authentication error - No auth cookie"));
+  }
+
+  const token = authCookie.split("=")[1];
+  console.log("7. Token Present:", !!token);
+
+  try {
+    console.log("8. Attempting to verify token");
     const user = jwt.verify(token, process.env.JWT_SECRET as string);
+    console.log("9. Token Verified Successfully:", user);
     socket.data.user = user;
     next();
   } catch (error) {
-    console.log(error);
-    
-    console.error("WebSocket Authentication Failed:", error);
-    next(new Error("Unauthorized"));
+    console.log("10. Token Verification Failed:", error);
+    next(new Error(`Authentication error - ${error}`));
   }
+  console.log("=== Debug Logging End ===");
 });
 
 io.on("connection", (socket) => {
