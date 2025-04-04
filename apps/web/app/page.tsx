@@ -6,7 +6,7 @@ import axios from "axios";
 
 export default async function Home() {
   const session = await getServerSession(authOption);
-  const res = await axios.get("https://drawly-api.sarthak.me", {withCredentials: true});
+  const res = await axios.get("https://drawly-api.sarthak-dev.me", {withCredentials: true});
   console.log("res", res);
   if(session?.user){
     redirect("/dashboard")
