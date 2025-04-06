@@ -9,17 +9,16 @@ export default function DocumentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { setDocumentID } =
+  const { setDocumentID, documentID } =
     useCanvasStore();
   const { documentId } = useParams();
   useEffect(() => {
-    if (documentId && documentId !== "dashboard") {
+      console.log("I am in the document layout");
       setDocumentID(documentId as string);
-    }
     return () => {
       setDocumentID("");
     };
-  }, [documentId]);
+  }, []);
 
   // useEffect(() => {
   //   if (documentId && documentId !== "dashboard") {

@@ -27,6 +27,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         
       }
       useLoadingStore.getState().setLoading(false);
+      return res.data.createDoc.id;
     } catch (error) {
       console.log(error);
       useLoadingStore.getState().setError("Internal server error");
@@ -86,7 +87,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 }));
 
 interface CanvasStore {
-  createDocument: (slug: string) => void;
+  createDocument: (slug: string) => Promise<string | undefined>;
   documentID: string;
   isCollaborative: boolean;
   setIsCollaborative: (isCollaborative: boolean) => void;

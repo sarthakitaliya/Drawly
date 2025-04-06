@@ -36,17 +36,17 @@ export class Draw {
   private setShapes: (shapes: Shape) => void;
   private documentID: string;
   private addShape: (shape: Shape, documentID: string) => void;
-  private getShapes: (documentId: string) => Shape[];
+  private getShapes: (documentId: string) => Promise<Shape[]>;
   private socket: any = null;
   private isCollaborative: boolean = false;
   private socketStore: any;
   constructor(
     canvas: HTMLCanvasElement,
     setShapes: (shapes: Shape) => void,
-    addShape: (shape: Shape) => void,
+    addShape: (shape: Shape, documentID: string) => void,
     documentID: string,
-    getShapes: (documentId: string) => Shape[],
-    socketStore: any
+    getShapes: (documentId: string) => Promise<Shape[]>,
+    socketStore: any | null
   ) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
@@ -54,13 +54,13 @@ export class Draw {
     this.ctx = canvas.getContext("2d")!;
     this.clicked = false;
     this.socketStore = socketStore;
-    //initialize state variables
     this.getShapes = getShapes;
     this.existingShapes = [];
     this.setShapes = setShapes;
     this.documentID = documentID;
     this.addShape = addShape;
-    this.socket = this.socketStore.socket;
+    this.socket = socketStore?.socket || null;
+    this.isCollaborative = !!socketStore?.isConnected;
     this.init();
     this.initMouseHandlers();
   }
@@ -68,17 +68,23 @@ export class Draw {
   async init() {
     if (!this.documentID) return;
 
-    const res = await checkDocumentAccess(this.documentID);
-    this.isCollaborative = res.isCollab;
+    try {
+      // Load existing shapes
+      const shapes = await this.getShapes(this.documentID);
+      this.existingShapes = Array.isArray(shapes) ? shapes : [];
 
-    if (this.socket && this.isCollaborative) {
-      this.initSocketEvents();
+      // Initialize socket events only for collaborative mode
+      if (this.isCollaborative && this.socket) {
+        this.initSocketEvents();
+      }
+
+      this.clearCanvas();
+    } catch (error) {
+      console.error('Failed to initialize canvas:', error);
+      useLoadingStore.getState().setError('Failed to load shapes');
     }
-    const shapes = (await this.getShapes(this.documentID)) || [];
-    this.existingShapes = Array.isArray(shapes) ? shapes : [];
-
-    this.clearCanvas();
   }
+
   initSocketEvents() {
     if (!this.isCollaborative || !this.socket) {
       return;
@@ -172,58 +178,66 @@ export class Draw {
   };
 
   mouseUpHandler = (e: MouseEvent) => {
+    if (!this.clicked) return;
+    
     this.clicked = false;
-    const width = e.clientX - this.startX;
-    const height = e.clientY - this.startY;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const width = x - this.startX;
+    const height = y - this.startY;
+
     let shape: Shape | null = null;
-    if (this.selectedTool === "rect") {
-      shape = {
-        type: "rect",
-        x: this.startX,
-        y: this.startY,
-        width,
-        height,
-      };
-      this.setShapes(shape);
-    } else if (this.selectedTool === "circle") {
-      const centerX = (this.startX + e.offsetX) / 2;
-      const centerY = (this.startY + e.offsetY) / 2;
-      const width = Math.abs(e.offsetX - this.startX);
-      const height = Math.abs(e.offsetY - this.startY);
-      shape = {
-        type: "circle",
-        centerX: centerX,
-        centerY: centerY,
-        radiusX: width / 2,
-        radiusY: height / 2,
-      };
-    }else if (this.selectedTool === "rhombus") {
-      shape = {
-        type: "rhombus",
-        x: this.startX,
-        y: this.startY,
-        width,
-        height,
-      };
+
+    switch (this.selectedTool) {
+      case "rect":
+        shape = {
+          type: "rect",
+          x: this.startX,
+          y: this.startY,
+          width,
+          height,
+        };
+        break;
+      case "circle":
+        const centerX = (this.startX + x) / 2;
+        const centerY = (this.startY + y) / 2;
+        shape = {
+          type: "circle",
+          centerX,
+          centerY,
+          radiusX: Math.abs(width / 2),
+          radiusY: Math.abs(height / 2),
+        };
+        break;
+      case "rhombus":
+        shape = {
+          type: "rhombus",
+          x: this.startX,
+          y: this.startY,
+          width,
+          height,
+        };
+        break;
     }
 
-    if (!shape) {
-      return;
-    }
+    if (!shape) return;
 
+    // Add shape to local state
+    this.existingShapes.push(shape);
+    this.clearCanvas();
+
+    // Handle collaborative vs non-collaborative mode
     if (this.isCollaborative) {
-      if (!this.socket || !this.socket.connected) {
-        console.log("socket not connected");
+      if (!this.socket?.connected) {
         useLoadingStore.getState().setMsg("Please refresh the page");
         return;
       }
       this.socket.emit("draw", { shape, roomId: this.documentID });
     } else {
-      console.log("not collaborative");
+      // For non-collaborative mode, just save to backend
       this.addShape(shape, this.documentID);
     }
-    this.existingShapes.push(shape);
-    console.log("that is from drawwww", this.documentID);
   };
 
   mouseMoveHandler = (e: MouseEvent) => {

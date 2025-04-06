@@ -7,7 +7,7 @@ import Document from "../../../components/Document";
 import { useEffect, useState } from "react";
 import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { timeAgo } from "../../../utils/timeAgo";
 
 
@@ -28,9 +28,8 @@ interface documentType {
 export default function Dashboard() {
   const { setError, loading, setLoading } = useLoadingStore();
   const {connectToSocket} = useSocketStore();
-  const param = useSearchParams();  
-  console.log(param.get("dashboard"));
-  
+
+  const router = useRouter();
   const { createDocument, documentID, setDocumentID } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<"create" | "join" | "none">(
@@ -66,11 +65,11 @@ export default function Dashboard() {
     }
   }, [loading]);
 
-  useEffect(() => {
-    if (documentID && documentID !== "dashboard") {
-      redirect(`/document/${documentID}`);
-    }
-  }, [documentID]);
+  // useEffect(() => {
+  //   if (documentID && documentID !== "dashboard") {
+  //     redirect(`/document/${documentID}`);
+  //   }
+  // }, [documentID]);
 
   const openPopup = (type: "create"  | "join") => {
     setIsOpen(true);
@@ -88,11 +87,21 @@ export default function Dashboard() {
 
   const handleOnConfirm = async () => {
     if (type === "create") {
-      createDocument(inputText);
+     createDocument(inputText).then((id) => {
+      if(id){
+        setDocumentID(id);
+        router.push(`/document/${id}`);
+      }else{
+        setError("Document creation failed");
+      }
+     });
     }else if (type === "join") {
-      connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string, inputText);
-      setDocumentID(inputText);
+      router.push(`/document/${inputText}`);
     }
+  };
+  const handleDocumentClick = (documentId: string) => {
+    // Use router.push directly instead of setting documentID
+    router.push(`/document/${documentId}`);
   };
   return (
     <div className="bg-[#101217] flex flex-col gap-10 w-full min-h-screen">
@@ -132,7 +141,7 @@ export default function Dashboard() {
               author={document.owner.name}
               members={document.members}
               onClick={() => {
-                setDocumentID(document.id);
+                handleDocumentClick(document.id);
               }}
             />
           ))}

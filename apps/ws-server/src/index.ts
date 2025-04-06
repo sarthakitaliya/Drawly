@@ -66,7 +66,10 @@ io.on("connection", (socket) => {
   roomUsers[roomId].push({ id: socket.id, name: socket.data.user.name });
   console.log("theee", roomUsers);
 
-  socket.broadcast.to(roomId).emit("user-joined", roomUsers[roomId]);
+  socket.broadcast.to(roomId).emit("user-joined", {
+    name: socket.data.user.name,
+    users: roomUsers[roomId],
+  });
 
   socket.on("draw", async (data: {shape: any, roomId: string }) => {
     console.log(data);

@@ -60,10 +60,13 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     socket.emit("join-room", documentId);
 
     socket.on("user-joined", (users) => {
-      useLoadingStore.getState().setMsg(`user joined ${users.name}`);
+      console.log("User joined", users);
+      
+      useLoadingStore.getState().setMsg(`${users.name} joined`);
     });
 
     socket.on("user-left", (data) => {
+      console.log("User left", data);
       useLoadingStore.getState().setMsg(`${data.name} left`);
     });
 
@@ -80,7 +83,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       set({ socket: null, isConnected: false });
     });
     socket.on("error", (error) => {
-      console.log(error);
+      console.log(error); 
       set({ socket: null, isConnected: false });
     });
     return socket;
