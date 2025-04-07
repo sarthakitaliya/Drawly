@@ -12,10 +12,10 @@ type Shape =
     }
   | {
       type: "circle";
-      centerX: number;
-      centerY: number;
-      radiusX: number;
-      radiusY: number;
+      x: number; //centerX
+      y: number; //centerY
+      width: number; // radiusX
+      height: number; // radiusY
     }
   | {
       type: "rhombus";
@@ -23,6 +23,13 @@ type Shape =
       y: number;
       width: number;
       height: number;
+    } |
+  {
+      type: "line";
+      x: number;
+      y: number;
+      x2: number;
+      y2: number;
     };
 
 export class Draw {
@@ -132,16 +139,26 @@ export class Draw {
     if (shape?.type == "circle") {
       this.ctx.beginPath();
       this.ctx.ellipse(
-        shape.centerX,
-        shape.centerY,
-        shape.radiusX,
-        shape.radiusY,
+        shape.x, // centerX
+        shape.y, // centerY
+        shape.width, // radiusX
+        shape.height, // radiusY
         0,
         0,
         Math.PI * 2
       );
       this.ctx.strokeStyle = "white";
       // ctx.lineWidth = 1;
+      this.ctx.stroke();
+    }
+  }
+
+  drawLine(shape: Shape) {
+    if (shape?.type == "line") {
+      this.ctx.beginPath();
+      this.ctx.moveTo(shape.x, shape.y);
+      this.ctx.lineTo(shape.x2, shape.y2);
+      this.ctx.strokeStyle = "white";
       this.ctx.stroke();
     }
   }
@@ -166,6 +183,9 @@ export class Draw {
           break;
         case "rhombus":
           this.drawRhombus(shape);
+          break;
+        case "line":
+          this.drawLine(shape);
           break;
       }
     });
@@ -204,10 +224,10 @@ export class Draw {
         const centerY = (this.startY + y) / 2;
         shape = {
           type: "circle",
-          centerX,
-          centerY,
-          radiusX: Math.abs(width / 2),
-          radiusY: Math.abs(height / 2),
+          x: centerX,
+          y: centerY,
+          width: Math.abs(width / 2),
+          height: Math.abs(height / 2),
         };
         break;
       case "rhombus":
@@ -217,6 +237,15 @@ export class Draw {
           y: this.startY,
           width,
           height,
+        };
+        break;
+      case "line":
+        shape = {
+          type: "line",
+          x: this.startX,
+          y: this.startY,
+          x2: x,
+          y2: y,
         };
         break;
     }
@@ -260,10 +289,26 @@ export class Draw {
         const centerY = (this.startY + e.offsetY) / 2;
         this.drawCircle({
           type: "circle",
-          centerX,
-          centerY,
-          radiusX: Math.abs(width / 2),
-          radiusY: Math.abs(height / 2),
+          x: centerX,
+          y: centerY,
+          width: Math.abs(width / 2),
+          height: Math.abs(height / 2),
+        });
+      } else if (this.selectedTool === "rhombus") {
+        this.drawRhombus({
+          type: "rhombus",
+          x: this.startX,
+          y: this.startY,
+          width,
+          height,
+        });
+      }else if (this.selectedTool === "line") {
+        this.drawLine({
+          type: "line",
+          x: this.startX,
+          y: this.startY,
+          x2: e.clientX,
+          y2: e.clientY,
         });
       }
     }

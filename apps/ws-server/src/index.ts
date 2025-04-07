@@ -6,7 +6,7 @@ import { prismaClient } from "@repo/db/client";
 dotenv.config();
 const io = new Server(4000, {
   cors: {
-    origin: process.env.ORIGIN_URL ||"http://localhost:3000",
+    origin: process.env.ORIGIN_URL || "http://localhost:3000",
     credentials: true,
     allowedHeaders: ["Authorization", "Content-Type", "Set-Cookie"],
   },
@@ -17,12 +17,11 @@ io.use((socket, next) => {
   console.log("hi");
   console.log("Handshake Headers:", socket.handshake.headers);
   console.log("Socket Handshake Query:", socket.handshake.query);
-  
-  
+
   try {
     console.log("Socket Auth");
     console.log("Socket Handshake Headers:", socket.handshake.headers);
-    
+
     const rawCookies = socket.handshake.headers.cookie;
     if (!rawCookies) {
       return next(new Error("No cookies found"));
@@ -30,7 +29,11 @@ io.use((socket, next) => {
 
     const token = rawCookies
       .split("; ")
-      .find((cookie) => cookie.startsWith("next-auth.session-token=") || cookie.startsWith("__Secure-next-auth.session-token="))
+      .find(
+        (cookie) =>
+          cookie.startsWith("next-auth.session-token=") ||
+          cookie.startsWith("__Secure-next-auth.session-token=")
+      )
       ?.split("=")[1];
     console.log("token", token);
     if (!token) {
@@ -41,7 +44,7 @@ io.use((socket, next) => {
     next();
   } catch (error) {
     console.log(error);
-    
+
     console.error("WebSocket Authentication Failed:", error);
     next(new Error("Unauthorized"));
   }
@@ -61,7 +64,7 @@ io.on("connection", (socket) => {
 
   socket.join(roomId);
   console.log(`User ${socket.data.user.name} joined room ${roomId}`);
-  
+
   if (!roomUsers[roomId]) roomUsers[roomId] = [];
   roomUsers[roomId].push({ id: socket.id, name: socket.data.user.name });
   console.log("theee", roomUsers);
@@ -71,21 +74,34 @@ io.on("connection", (socket) => {
     users: roomUsers[roomId],
   });
 
-  socket.on("draw", async (data: {shape: any, roomId: string }) => {
+  socket.on("draw", async (data: { shape: any; roomId: string }) => {
     console.log(data);
     socket.broadcast.to(data.roomId).emit("draw", data.shape);
     const { roomId, shape } = data;
     if (!roomId || !shape) return;
-    await prismaClient.shape.create({
-      data: {
-        documentId: roomId,
-        x: shape.x,
-        y: shape.y,
-        type: shape.type,
-        width: shape.width,
-        height: shape.height,
-      },    
-    });
+    if (shape.type === "line") {
+      await prismaClient.shape.create({
+        data: {
+          type: shape.type,
+          documentId: roomId,
+          x: shape.x,
+          y: shape.y,
+          x2: shape.x2,
+          y2: shape.y2,
+        },
+      });
+    } else {
+      await prismaClient.shape.create({
+        data: {
+          type: shape.type,
+          documentId: roomId,
+          x: shape.x,
+          y: shape.y,
+          width: shape.width,
+          height: shape.height,
+        },
+      });
+    }
   });
 
   socket.on("disconnect", () => {

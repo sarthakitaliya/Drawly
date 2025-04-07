@@ -45,6 +45,8 @@ model Shape {
   y          Float
   width      Float?
   height     Float?
+  x2         Float?
+  y2         Float?
   color      String   @default("#FFFFFF")
   createdAt  DateTime @default(now())
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
