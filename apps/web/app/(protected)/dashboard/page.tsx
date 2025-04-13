@@ -65,12 +65,6 @@ export default function Dashboard() {
     }
   }, [loading]);
 
-  // useEffect(() => {
-  //   if (documentID && documentID !== "dashboard") {
-  //     redirect(`/document/${documentID}`);
-  //   }
-  // }, [documentID]);
-
   const openPopup = (type: "create"  | "join") => {
     setIsOpen(true);
     if (type === "create") {
