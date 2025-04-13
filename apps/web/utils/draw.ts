@@ -35,7 +35,7 @@ type Shape =
 export class Draw {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private existingShapes: Shape[];
+  private existingShapes: Shape[] = [];
   private clicked: boolean;
   private startX = 0;
   private startY = 0;
@@ -47,13 +47,17 @@ export class Draw {
   private socket: any = null;
   private isCollaborative: boolean = false;
   private socketStore: any;
+  private isPanning: boolean = false;
+  private offset: { x: number; y: number } = { x: 0, y: 0 };
+  private panStart: { x: number; y: number } = { x: 0, y: 0 };
+  private scale: number = 1;
   constructor(
     canvas: HTMLCanvasElement,
     setShapes: (shapes: Shape) => void,
     addShape: (shape: Shape, documentID: string) => void,
     documentID: string,
     getShapes: (documentId: string) => Promise<Shape[]>,
-    socketStore: any | null
+    socketStore: any
   ) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
@@ -62,7 +66,6 @@ export class Draw {
     this.clicked = false;
     this.socketStore = socketStore;
     this.getShapes = getShapes;
-    this.existingShapes = [];
     this.setShapes = setShapes;
     this.documentID = documentID;
     this.addShape = addShape;
@@ -108,6 +111,7 @@ export class Draw {
 
   setTool(tool: Tool) {
     this.selectedTool = tool;
+    this.canvas.style.cursor = tool === "hand" ? "grab" : "crosshair";
   }
 
   drawReact(shape: Shape) {
@@ -167,6 +171,11 @@ export class Draw {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#18181B";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.save();
+    this.ctx.translate(this.offset.x, this.offset.y);
+    this.ctx.scale(this.scale, this.scale);
+    // this.ctx.setTransform(1, 0, 0, 1, this.offset.x, this.offset.y); // Reset after drawing
+
 
     if (!this.existingShapes) return;
     console.log("from the draw", this.existingShapes);
@@ -189,21 +198,33 @@ export class Draw {
           break;
       }
     });
+    this.ctx.restore();
   }
 
   mouseDownHanler = (e: MouseEvent) => {
+    if(this.selectedTool === "hand") {
+      this.isPanning = true;
+      this.panStart = { x: e.clientX, y: e.clientY };
+      this.canvas.style.cursor = "grabbing";
+      return;
+    }
     this.clicked = true;
-    this.startX = e.clientX;
-    this.startY = e.clientY;
+    this.startX = (e.clientX - this.offset.x) / this.scale;
+    this.startY = (e.clientY - this.offset.y) / this.scale;
+    
   };
 
   mouseUpHandler = (e: MouseEvent) => {
+    if(this.isPanning) {
+      this.isPanning = false;
+      this.canvas.style.cursor = "grab";
+      return;
+    }
     if (!this.clicked) return;
     
     this.clicked = false;
-    const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - this.offset.x) / this.scale;
+    const y = (e.clientY - this.offset.y) / this.scale;
     const width = x - this.startX;
     const height = y - this.startY;
 
@@ -256,7 +277,6 @@ export class Draw {
     this.existingShapes.push(shape);
     this.clearCanvas();
 
-    // Handle collaborative vs non-collaborative mode
     if (this.isCollaborative) {
       if (!this.socket?.connected) {
         useLoadingStore.getState().setMsg("Please refresh the page");
@@ -270,12 +290,26 @@ export class Draw {
   };
 
   mouseMoveHandler = (e: MouseEvent) => {
+    if(this.isPanning) {
+      const dx = e.clientX - this.panStart.x;
+      const dy = e.clientY - this.panStart.y;
+      this.offset.x += dx;
+      this.offset.y += dy;
+      this.panStart = { x: e.clientX, y: e.clientY };
+      this.clearCanvas();
+      return;
+    }
     if (this.clicked) {
-      const width = e.clientX - this.startX;
-      const height = e.clientY - this.startY;
+      const x = (e.clientX - this.offset.x) / this.scale;
+      const y = (e.clientY - this.offset.y) / this.scale;
+      const width = x - this.startX;
+      const height = y - this.startY;
+  
 
       this.clearCanvas();
-
+      this.ctx.save();
+      this.ctx.translate(this.offset.x, this.offset.y);
+      this.ctx.scale(this.scale, this.scale);
       if (this.selectedTool === "rect") {
         this.drawReact({
           type: "rect",
@@ -285,8 +319,8 @@ export class Draw {
           height,
         });
       } else if (this.selectedTool === "circle") {
-        const centerX = (this.startX + e.offsetX) / 2;
-        const centerY = (this.startY + e.offsetY) / 2;
+        const centerX = (this.startX + x) / 2;
+        const centerY = (this.startY + y) / 2;
         this.drawCircle({
           type: "circle",
           x: centerX,
@@ -307,22 +341,47 @@ export class Draw {
           type: "line",
           x: this.startX,
           y: this.startY,
-          x2: e.clientX,
-          y2: e.clientY,
+          x2: (e.clientX - this.offset.x) / this.scale,
+          y2: (e.clientY - this.offset.y) / this.scale,
         });
       }
     }
+    this.ctx.restore();
   };
+
+  handleZoom = (e: WheelEvent) => {
+    e.preventDefault();
+  
+    const zoomIntensity = 0.05;
+    const zoom = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
+  
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+  
+    const worldX = (mouseX - this.offset.x) / this.scale;
+    const worldY = (mouseY - this.offset.y) / this.scale;
+  
+    this.scale *= zoom;
+    this.scale = Math.min(Math.max(this.scale, 0.2), 10);
+
+    this.offset.x = mouseX - worldX * this.scale;
+    this.offset.y = mouseY - worldY * this.scale;
+  
+    this.clearCanvas();
+  };
+  
   initMouseHandlers() {
     this.canvas.addEventListener("mousedown", this.mouseDownHanler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
+    this.canvas.addEventListener("wheel", this.handleZoom);
   }
 
   destroy() {
     this.canvas.removeEventListener("mousedown", this.mouseDownHanler);
     this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
+    this.canvas.removeEventListener("wheel", this.handleZoom);
     if (this.socket) {
       this.socket.disconnect();
     }
