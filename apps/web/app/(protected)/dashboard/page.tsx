@@ -45,6 +45,8 @@ export default function Dashboard() {
       try {
         setLoading(true);
         const res = await api.get("/documents");
+        console.log(res.data);
+        
         if (res.data.success === false) {
           setError("Internal server error");
           setLoading(false);

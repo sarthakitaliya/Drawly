@@ -9,7 +9,7 @@ export default function DocumentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { setDocumentID, documentID } =
+  const { setDocumentID } =
     useCanvasStore();
   const { documentId } = useParams();
   useEffect(() => {
@@ -19,31 +19,6 @@ export default function DocumentLayout({
       setDocumentID("");
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (documentId && documentId !== "dashboard") {
-  //     checkDocumentAccess(documentId as string).then((res: any) => {
-  //       console.log(res);
-
-  //       if (!res?.status) {
-  //         setDocumentID("");
-  //         setError("You don't have access to this document");
-  //         redirect("/dashboard");
-  //       }
-
-  //       console.log("isCollaborative", res?.isCollab);  
-        
-  //       if (res?.isCollab) {
-  //         setIsCollaborative(true);
-  //         if (socket) {
-  //           return;
-  //         }else{
-  //           connectToSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string, documentId as string);
-  //         }
-  //       }
-  //     });
-  //   }
-  // }, [documentId]);
-  
+    
   return <>{children}</>;
 }
