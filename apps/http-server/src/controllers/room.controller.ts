@@ -16,6 +16,12 @@ export const convertToCollab = async (req: Request, res: Response) => {
                 isCollaborative: true
             }
         })
+        await prismaClient.member.create({
+            data:{
+                documentId: documentId,
+                userId: req.user.id
+            }
+        })
         res.status(200).json({success: true})
     } catch (error) {
         console.log(error);
