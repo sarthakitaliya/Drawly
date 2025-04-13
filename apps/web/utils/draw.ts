@@ -1,4 +1,4 @@
-import { Tool } from "../components/Toolbar";
+import { Tool } from "../components/Tools";
 import { checkDocumentAccess } from "./localStorage";
 import { useSocketStore, useLoadingStore } from "@repo/store";
 
@@ -370,6 +370,17 @@ export class Draw {
     this.clearCanvas();
   };
   
+  getScale(): number {
+    return this.scale;
+  }
+
+  resetZoom() {
+    this.scale = 1;
+    this.offset.x = 0;
+    this.offset.y = 0;
+    this.clearCanvas();
+  }
+
   initMouseHandlers() {
     this.canvas.addEventListener("mousedown", this.mouseDownHanler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);

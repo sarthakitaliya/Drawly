@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import ToolBar, { Tool } from "../../../../components/Toolbar";
+import Tools, { Tool } from "../../../../components/Tools";
 import { Draw } from "../../../../utils/draw";
 import { useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
 import { checkDocumentAccess } from "../../../../utils/localStorage";
@@ -81,7 +81,7 @@ export default function CanvasPage() {
   }, [tool, canva]);
   return (
     <div>
-      <ToolBar selectedTool={tool} setSelectedTool={setTool} canva={canva} />
+      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} />
       <canvas ref={canvasRef}></canvas>
     </div>
   );
