@@ -23,7 +23,19 @@ export const getAllDocuments = async (req: Request, res: Response) => {
             name: true,
           },
         },
-        members: true,
+        members: {
+          select: {
+            id: true,
+            role: true,
+            user:{
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            }
+          },
+        },
         createdAt: true,
         isCollaborative: true,
       },
