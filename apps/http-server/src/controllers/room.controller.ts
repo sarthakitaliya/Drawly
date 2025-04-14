@@ -79,3 +79,29 @@ export const checkAccess = async (req: Request, res: Response) => {
         res.status(500).json({success: false, message: "Internal server error"})
     }
 }
+
+export const getAllMembers = async (req: Request, res: Response) => {
+    try {
+        const {documentId} = req.params;
+        if(!documentId){
+            res.status(400).json({success: false, message: "Document id is required"})
+            return;
+        }
+        const members = await prismaClient.member.findMany({
+            where:{
+                documentId: documentId
+            },
+            include:{
+                user: true
+            }
+        })
+        if(members){
+            res.status(200).json({success: true, members})
+        }else{
+            res.status(404).json({success: false, message: "Members not found"})
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({success: false, message: "Internal server error"})
+    }
+}

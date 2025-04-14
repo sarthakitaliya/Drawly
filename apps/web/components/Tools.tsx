@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useCanvasStore, useSocketStore } from "@repo/store";
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line";
 
@@ -20,17 +22,20 @@ export default function Tools({
   selectedTool,
   setSelectedTool,
   canva,
+  members,
 }: {
   selectedTool: Tool;
   setSelectedTool: (s: Tool) => void;
   canva: any;
+  members: any[];
 }) {
+  const { data: session } = useSession();
   const { setDocumentID } = useCanvasStore();
-  const { convertToCollab, connectToSocket, socket, disconnect } =
+  const { convertToCollab, connectToSocket, socket, disconnect, onlineUsers } =
     useSocketStore();
   const router = useRouter();
   const [scale, setScale] = useState(1);
-
+  
   useEffect(() => {
     const updateScale = () => {
       if (canva) {
@@ -76,7 +81,9 @@ export default function Tools({
     router.push("/dashboard");
     disconnect();
   };
-
+  const isUserOnline = (userId: string) => {
+    return onlineUsers.some((user) => user.userId === userId);
+  };
   return (
     <div>
       <div
@@ -159,37 +166,71 @@ export default function Tools({
         </div>
       </div>
       <div
-  style={{
-    position: "fixed",
-    bottom: 15,
-    left: 20,
-  }}
-  className="flex items-center px-4 py-1 gap-4 bg-zinc-800 rounded-xl shadow-lg"
->
-  <button
-    onClick={handleZoomOut}
-    className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200"
-    title="Zoom Out"
-  >
-    <Minus size={18} className="text-white" />
-  </button>
-  
-  <span className="text-white text-sm font-medium min-w-[50px] text-center cursor-pointer" title="Reset Zoom" onClick={() => {
-    if (canva) {
-      canva.resetZoom();
-    }
-  }}>
-    {new Intl.NumberFormat("en-GB", { style: "percent" }).format(scale)}
-  </span>
+        style={{
+          position: "fixed",
+          bottom: 15,
+          left: 20,
+        }}
+        className="flex items-center px-4 py-1 gap-4 bg-zinc-800 rounded-xl shadow-lg"
+      >
+        <button
+          onClick={handleZoomOut}
+          className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200"
+          title="Zoom Out"
+        >
+          <Minus size={18} className="text-white" />
+        </button>
 
-  <button
-    onClick={handleZoomIn}
-    className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200"
-    title="Zoom In"
-  >
-    <Plus size={18} className="text-white" />
-  </button>
-</div>
+        <span
+          className="text-white text-sm font-medium min-w-[50px] text-center cursor-pointer"
+          title="Reset Zoom"
+          onClick={() => {
+            if (canva) {
+              canva.resetZoom();
+            }
+          }}
+        >
+          {new Intl.NumberFormat("en-GB", { style: "percent" }).format(scale)}
+        </span>
+
+        <button
+          onClick={handleZoomIn}
+          className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200"
+          title="Zoom In"
+        >
+          <Plus size={18} className="text-white" />
+        </button>
+      </div>
+      <div style={{
+        position: "fixed",
+        bottom: 20,
+        right: 25
+      }}
+      className="bg-zinc-800 p-2.5 rounded-lg shadow-lg group">
+        <Users
+          size={20}
+          className="text-white cursor-pointer hover:text-gray-400 transition-colors duration-200"
+        />
+        <div className="absolute right-0 bottom-10 bg hidden group-hover:block bg-zinc-800 border border-green-100 text-white rounded-xl shadow-lg p-4 w-64 max-h-64 overflow-y-auto">
+        <h4 className="text-sm font-semibold mb-2 border-b pb-2">Members</h4>
+        {members.map((member) => (
+          <div key={member.user.id} className="flex justify-between items-center py-1">
+            <Image
+              src={member.user.image}
+              alt={member.user.name}
+              width={30}
+              height={30}
+              className="rounded-full mr-2"
+            />
+            <span>{member.user.name}</span>
+            {member.user.id == session?.user.id ? (
+              <span className="text-zinc-500">(You)</span>
+            ) : null}
+            <span className={`w-2 h-2 rounded-full ${isUserOnline(member.user.id) ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+          </div>
+        ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,10 @@ import { useCanvasStore } from "./useCanvasStore";
 export const useSocketStore = create<SocketStore>((set, get) => ({
   socket: null,
   isConnected: false,
+  onlineUsers: [],
+  setOnlineUsers: (users) => {
+    set({ onlineUsers: users });
+  },
   convertToCollab: async (documentId: string) => {
     try {
       const cachedDocuments = JSON.parse(
@@ -55,24 +59,30 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       console.log("Socket connected successfully");
       set({ socket, isConnected: true });
       useCanvasStore.getState().setIsCollaborative(true);
+      socket.emit("get-users", documentId);
     });
 
     socket.emit("join-room", documentId);
 
-    socket.on("user-joined", (users) => {
-      console.log("User joined", users);
-      
-      useLoadingStore.getState().setMsg(`${users.name} joined`);
+    socket.on("user-joined", (data) => {
+      set({ onlineUsers: data.users });
+      console.log(get().onlineUsers);
+      useLoadingStore.getState().setMsg(`${data.name} joined`);
     });
 
+    socket.on("online-user", (data) => {
+      set({ onlineUsers: data.users });
+    });
     socket.on("user-left", (data) => {
-      console.log("User left", data);
+      set({ onlineUsers: data.users });
+      console.log(get().onlineUsers);
+       
       useLoadingStore.getState().setMsg(`${data.name} left`);
     });
 
-    socket.on("disconnect", (resone) => {
+    socket.on("disconnect", (reason) => {
       console.log("Disconnected from socket")
-      console.log(resone);
+      console.log(reason);
       
       set({ socket: null, isConnected: false });
     });
@@ -111,6 +121,8 @@ type Element = {
 };
 interface SocketStore {
   socket: Socket | null;
+  onlineUsers: any[];
+  setOnlineUsers: (users: any[]) => void;
   isConnected: boolean;
   connectToSocket: (url: string, documentId: string) => any;
   setSocket: (socket: Socket) => void

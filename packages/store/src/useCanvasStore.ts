@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "@repo/utils/api";
 import { useLoadingStore } from "./useLoadingStore";
+import { useSocketStore } from "./useSocketStore";
 
 export const useCanvasStore = create<CanvasStore>((set, get) => ({
   shapes: [],
@@ -124,6 +125,23 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       console.log(error);
       useLoadingStore.getState().setError("Internal server error");
     }
+  },
+  getAllMembers: async (documentId: string) => {
+    try {
+      if(!documentId){
+        useLoadingStore.getState().setError("Document ID is required");
+        return;
+      }
+      const res = await api.get(`/room/members/${documentId}` );
+      if (res.data.success === true) {
+        return res.data.members;
+      }
+      useLoadingStore.getState().setError("Failed to fetch members");
+      return [];
+    } catch (error) {
+      console.log(error);
+      useLoadingStore.getState().setError("Failed to fetch members");
+    }
   }
 
 }));
@@ -140,6 +158,7 @@ interface CanvasStore {
   getShapes: (documentId: string) => Promise<Shape[] | []>;
   deleteDocument: (documentId: string) => void;
   renameDocument: (documentId: string, name: string) => void;
+  getAllMembers: (documentId: string) => Promise<any>;
 }
 
 interface Shape {

@@ -7,13 +7,14 @@ import { checkDocumentAccess } from "../../../../utils/localStorage";
 import { redirect } from "next/navigation";
 
 export default function CanvasPage() {
-  const { setShapes, addShape, getShapes, documentID, setDocumentID } =
+  const { setShapes, addShape, getShapes, documentID, setDocumentID, getAllMembers } =
     useCanvasStore();
   const { connectToSocket, isConnected, disconnect } = useSocketStore();
   const { setError } = useLoadingStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tool, setTool] = useState<Tool>("rect");
   const [canva, setCanva] = useState<Draw>();
+  const [members, setMembers] = useState<any[]>([]);
   const socketStore = useSocketStore.getState();
 
 
@@ -36,6 +37,8 @@ export default function CanvasPage() {
           documentID as string
         );
         console.log("Socket connection initialized");
+        const member = await getAllMembers(documentID as string)
+        setMembers(member);
       } catch (error) {
         setDocumentID("");
         console.error("Failed to connect to socket:", error);
@@ -81,7 +84,7 @@ export default function CanvasPage() {
   }, [tool, canva]);
   return (
     <div>
-      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} />
+      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} members={members} />
       <canvas ref={canvasRef}></canvas>
     </div>
   );

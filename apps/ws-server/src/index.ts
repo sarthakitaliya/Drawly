@@ -11,7 +11,7 @@ const io = new Server(4000, {
     allowedHeaders: ["Authorization", "Content-Type", "Set-Cookie"],
   },
 });
-const roomUsers: Record<string, { id: string; name: string }[]> = {};
+const roomUsers: Record<string, { id: string; name: string, userId: string }[]> = {};
 
 io.use((socket, next) => {
   console.log("hi");
@@ -66,14 +66,21 @@ io.on("connection", (socket) => {
   console.log(`User ${socket.data.user.name} joined room ${roomId}`);
 
   if (!roomUsers[roomId]) roomUsers[roomId] = [];
-  roomUsers[roomId].push({ id: socket.id, name: socket.data.user.name });
+  roomUsers[roomId].push({ id: socket.id, name: socket.data.user.name, userId: socket.data.user.id });
   console.log("theee", roomUsers);
 
   socket.broadcast.to(roomId).emit("user-joined", {
     name: socket.data.user.name,
     users: roomUsers[roomId],
   });
-
+  socket.on("get-users", (roomId: string) => {
+    console.log("get-users", roomId);
+    if (!roomId) return;
+    socket.emit("online-user", {
+      name: socket.data.user.name,
+      users: roomUsers[roomId],
+    });
+  });
   socket.on("draw", async (data: { shape: any; roomId: string }) => {
     console.log(data);
     socket.broadcast.to(data.roomId).emit("draw", data.shape);
