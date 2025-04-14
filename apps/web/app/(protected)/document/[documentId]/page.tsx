@@ -7,7 +7,7 @@ import { checkDocumentAccess } from "../../../../utils/localStorage";
 import { redirect } from "next/navigation";
 
 export default function CanvasPage() {
-  const { setShapes, addShape, getShapes, documentID, setDocumentID, getAllMembers } =
+  const { setShapes, addShape, getShapes, documentID, setDocumentID, getAllMembers, setIsCollaborative } =
     useCanvasStore();
   const { connectToSocket, isConnected, disconnect } = useSocketStore();
   const { setError } = useLoadingStore();
@@ -36,6 +36,7 @@ export default function CanvasPage() {
           process.env.NEXT_PUBLIC_SOCKET_URL as string,
           documentID as string
         );
+        setIsCollaborative(true); 
         console.log("Socket connection initialized");
         const member = await getAllMembers(documentID as string)
         setMembers(member);
@@ -44,6 +45,8 @@ export default function CanvasPage() {
         console.error("Failed to connect to socket:", error);
         setError("Failed to connect to collaborative session");
       }
+    }else{
+      setIsCollaborative(false);
     }
   }
   useEffect(() => {

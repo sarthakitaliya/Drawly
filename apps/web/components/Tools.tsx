@@ -30,12 +30,12 @@ export default function Tools({
   members: any[];
 }) {
   const { data: session } = useSession();
-  const { setDocumentID } = useCanvasStore();
+  const { setDocumentID, isCollaborative } = useCanvasStore();
   const { convertToCollab, connectToSocket, socket, disconnect, onlineUsers } =
     useSocketStore();
   const router = useRouter();
   const [scale, setScale] = useState(1);
-  
+
   useEffect(() => {
     const updateScale = () => {
       if (canva) {
@@ -201,36 +201,47 @@ export default function Tools({
           <Plus size={18} className="text-white" />
         </button>
       </div>
-      <div style={{
-        position: "fixed",
-        bottom: 20,
-        right: 25
-      }}
-      className="bg-zinc-800 p-2.5 rounded-lg shadow-lg group">
-        <Users
-          size={20}
-          className="text-white cursor-pointer hover:text-gray-400 transition-colors duration-200"
-        />
-        <div className="absolute right-0 bottom-10 bg hidden group-hover:block bg-zinc-800 border border-green-100 text-white rounded-xl shadow-lg p-4 w-64 max-h-64 overflow-y-auto">
-        <h4 className="text-sm font-semibold mb-2 border-b pb-2">Members</h4>
-        {members.map((member) => (
-          <div key={member.user.id} className="flex justify-between items-center py-1">
-            <Image
-              src={member.user.image}
-              alt={member.user.name}
-              width={30}
-              height={30}
-              className="rounded-full mr-2"
-            />
-            <span>{member.user.name}</span>
-            {member.user.id == session?.user.id ? (
-              <span className="text-zinc-500">(You)</span>
-            ) : null}
-            <span className={`w-2 h-2 rounded-full ${isUserOnline(member.user.id) ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+      {isCollaborative && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 25,
+          }}
+          className="bg-zinc-800 p-2.5 rounded-lg shadow-lg group"
+        >
+          <Users
+            size={20}
+            className="text-white cursor-pointer hover:text-gray-400 transition-colors duration-200"
+          />
+          <div className="absolute right-0 bottom-10 bg hidden group-hover:block bg-zinc-800 border border-green-100 text-white rounded-xl shadow-lg p-4 w-64 max-h-64 overflow-y-auto">
+            <h4 className="text-sm font-semibold mb-2 border-b pb-2">
+              Members
+            </h4>
+            {members.map((member) => (
+              <div
+                key={member.user.id}
+                className="flex justify-between items-center py-1"
+              >
+                <Image
+                  src={member.user.image}
+                  alt={member.user.name}
+                  width={30}
+                  height={30}
+                  className="rounded-full mr-2"
+                />
+                <span>{member.user.name}</span>
+                {member.user.id == session?.user.id ? (
+                  <span className="text-zinc-500">(You)</span>
+                ) : null}
+                <span
+                  className={`w-2 h-2 rounded-full ${isUserOnline(member.user.id) ? "bg-green-500" : "bg-gray-500"}`}
+                ></span>
+              </div>
+            ))}
           </div>
-        ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
