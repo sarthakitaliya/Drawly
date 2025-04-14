@@ -90,18 +90,17 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         useLoadingStore.getState().setError("Document ID is required");
         return;
       }
-      useLoadingStore.getState().setLoading(true);
       const res = await api.delete(`/documents/${documentId}`);
-      if (res.data.success === true) {
-        const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");
-        const newIds = ids.filter((id: { id: string }) => id.id !== documentId);
-        localStorage.setItem("documentIds", JSON.stringify(newIds));
-        useLoadingStore.getState().setLoading(false);
+      if (!res.data.success) {
+        useLoadingStore.getState().setError("Document deletion failed");
+        return;
       }
+      const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");
+      const newIds = ids.filter((id: { id: string }) => id.id !== documentId);
+      localStorage.setItem("documentIds", JSON.stringify(newIds));
     } catch (error) {
       console.log(error);
       useLoadingStore.getState().setError("Internal server error");
-      useLoadingStore.getState().setLoading(false);
     }
   },
   renameDocument: async (documentId: string, name: string) => {
@@ -114,17 +113,16 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         useLoadingStore.getState().setError("Document name is required");
         return;
       }
-      useLoadingStore.getState().setLoading(true);
       const res = await api.put(`/documents/${documentId}`, {
         name,
       });
-      if (res.data.success === true) {
-        useLoadingStore.getState().setLoading(false);
+      if (!res.data.success) {
+        useLoadingStore.getState().setError("Document renaming failed");
+        return;
       }
     } catch (error) {
       console.log(error);
       useLoadingStore.getState().setError("Internal server error");
-      useLoadingStore.getState().setLoading(false);
     }
   }
 
