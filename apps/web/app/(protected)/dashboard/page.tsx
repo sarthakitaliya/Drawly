@@ -1,5 +1,5 @@
 "use client";
-import {  useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
+import { useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
 import Navbar from "../../../components/Navbar";
 import Card from "../../../components/Card";
 import { Plus, LogIn } from "lucide-react";
@@ -9,7 +9,6 @@ import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { timeAgo } from "../../../utils/timeAgo";
-
 
 interface documentType {
   id: string;
@@ -32,14 +31,18 @@ interface documentType {
 }
 export default function Dashboard() {
   const { setError, loading, setLoading } = useLoadingStore();
-  const {connectToSocket} = useSocketStore();
+  const { connectToSocket } = useSocketStore();
 
   const router = useRouter();
-  const { createDocument, documentID, setDocumentID } = useCanvasStore();
+  const {
+    createDocument,
+    documentID,
+    setDocumentID,
+    deleteDocument,
+    renameDocument,
+  } = useCanvasStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState<"create" | "join" | "none">(
-    "create"
-  );
+  const [type, setType] = useState<"create" | "join" | "none">("create");
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [inputText, setInputText] = useState("");
@@ -51,7 +54,7 @@ export default function Dashboard() {
         setLoading(true);
         const res = await api.get("/documents");
         console.log(res.data);
-        
+
         if (res.data.success === false) {
           setError("Internal server error");
           setLoading(false);
@@ -72,7 +75,7 @@ export default function Dashboard() {
     }
   }, [loading]);
 
-  const openPopup = (type: "create"  | "join") => {
+  const openPopup = (type: "create" | "join") => {
     setIsOpen(true);
     if (type === "create") {
       setType("create");
@@ -88,21 +91,56 @@ export default function Dashboard() {
 
   const handleOnConfirm = async () => {
     if (type === "create") {
-     createDocument(inputText).then((id) => {
-      if(id){
-        setDocumentID(id);
-        router.push(`/document/${id}`);
-      }else{
-        setError("Document creation failed");
-      }
-     });
-    }else if (type === "join") {
+      createDocument(inputText).then((id) => {
+        if (id) {
+          setDocumentID(id);
+          router.push(`/document/${id}`);
+        } else {
+          setError("Document creation failed");
+        }
+      });
+    } else if (type === "join") {
       router.push(`/document/${inputText}`);
     }
   };
   const handleDocumentClick = (documentId: string) => {
-    // Use router.push directly instead of setting documentID
     router.push(`/document/${documentId}`);
+  };
+
+  const handleRenameDocument = async (documentId: string, newName: string) => {
+    console.log("Renaming document", documentId, "to", newName);
+    if (!newName) {
+      setError("Document name cannot be empty");
+      return;
+    }
+    if (newName.length > 20) {
+      setError("Document name cannot be more than 20 characters");
+      return;
+    }
+
+    try {
+      await renameDocument(documentId, newName);
+      setDocuments((prev) => {
+        return prev?.map((doc) =>
+          doc.id === documentId ? { ...doc, slug: newName } : doc
+        );
+      });
+    } catch (error) {
+      console.log(error);
+      setError("Internal server error");
+    }
+  };
+  const handleDeleteDocument = async (documentId: string) => {
+    console.log("Deleting document", documentId);
+    try {
+      await deleteDocument(documentId);
+      setDocuments((prev) => {
+        return prev?.filter((doc) => doc.id !== documentId);
+      });
+    } catch (error) {
+      console.log(error);
+      setError("Internal server error");
+    }
   };
   return (
     <div className="bg-[#101217] flex flex-col gap-10 w-full min-h-screen">
@@ -119,17 +157,16 @@ export default function Dashboard() {
           onClick={() => openPopup("join")}
         />
       </div>
-      <div className="flex flex-col justify-center items-center mx-20">
-        <div className="w-[80vw] bg-[#1A1F2B] text-white uppercase flex justify-between items-center p-4 rounded-t-xl">
+      <div className="flex flex-col justify-center items-center mx-20 overflow-visible">
+        <div className="w-full bg-[#1A1F2B] text-white uppercase flex justify-between items-center p-4 rounded-t-xl">
           <h1 className="flex-4">Name</h1>
           <h1 className="flex-2 text-center">Created</h1>
           <h1 className="flex-1 text-center">Author</h1>
           <h1 className="flex-2 text-right">MEMBERS</h1>
+          <h1 className="flex-1 text-right"></h1>
         </div>
-        <div className="flex flex-col justify-between items-center">
-          {loading && (
-            <h1 className="text-white text-2xl mt-10">Loading...</h1>
-          )}
+        <div className="flex flex-col justify-between items-center w-full rounded-b-xl">
+          {loading && <h1 className="text-white text-2xl mt-10">Loading...</h1>}
 
           {documents && documents.length === 0 && (
             <h1 className="text-white text-2xl mt-10">No documents found</h1>
@@ -137,6 +174,7 @@ export default function Dashboard() {
           {documents?.map((document) => (
             <Document
               key={document.id}
+              documentId={document.id}
               name={document.slug}
               created={timeAgo(document.createdAt)}
               author={document.owner.name}
@@ -144,6 +182,8 @@ export default function Dashboard() {
               onClick={() => {
                 handleDocumentClick(document.id);
               }}
+              onRename={handleRenameDocument}
+              onDelete={handleDeleteDocument}
             />
           ))}
         </div>
@@ -161,4 +201,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

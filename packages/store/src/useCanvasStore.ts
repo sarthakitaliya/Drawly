@@ -84,6 +84,50 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       useLoadingStore.getState().setLoading(false);
     }
   },
+  deleteDocument: async (documentId: string) => {
+    try {
+      if (!documentId) {
+        useLoadingStore.getState().setError("Document ID is required");
+        return;
+      }
+      useLoadingStore.getState().setLoading(true);
+      const res = await api.delete(`/documents/${documentId}`);
+      if (res.data.success === true) {
+        const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");
+        const newIds = ids.filter((id: { id: string }) => id.id !== documentId);
+        localStorage.setItem("documentIds", JSON.stringify(newIds));
+        useLoadingStore.getState().setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      useLoadingStore.getState().setError("Internal server error");
+      useLoadingStore.getState().setLoading(false);
+    }
+  },
+  renameDocument: async (documentId: string, name: string) => {
+    try {
+      if (!documentId) {
+        useLoadingStore.getState().setError("Document ID is required");
+        return;
+      }
+      if (!name) {
+        useLoadingStore.getState().setError("Document name is required");
+        return;
+      }
+      useLoadingStore.getState().setLoading(true);
+      const res = await api.put(`/documents/${documentId}`, {
+        name,
+      });
+      if (res.data.success === true) {
+        useLoadingStore.getState().setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      useLoadingStore.getState().setError("Internal server error");
+      useLoadingStore.getState().setLoading(false);
+    }
+  }
+
 }));
 
 interface CanvasStore {
@@ -96,6 +140,8 @@ interface CanvasStore {
   addShape: (shape: Shape, documentId: string) => void;
   setShapes: (shapes: Shape) => void;
   getShapes: (documentId: string) => Promise<Shape[] | []>;
+  deleteDocument: (documentId: string) => void;
+  renameDocument: (documentId: string, name: string) => void;
 }
 
 interface Shape {

@@ -203,3 +203,72 @@ export const authorizeDocumentAccess = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const deleteDocument = async (req: Request, res: Response) => {
+  try {
+    const { documentId } = req.params;
+
+    if (!documentId) {
+      res.status(400).json({
+        success: false,
+        message: "Document ID is required",
+      });
+      return;
+    }
+    const document = await prismaClient.document.delete({
+      where: {
+        id: documentId,
+      },
+    });
+    res.json({
+      success: true,
+      message: "Document deleted",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const renameDocument = async (req: Request, res: Response) => {
+  try {
+    const { documentId } = req.params;
+    const { name } = req.body;
+
+    if (!documentId) {
+      res.status(400).json({
+        success: false,
+        message: "Document ID is required",
+      });
+      return;
+    }
+    if (!name) {
+      res.status(400).json({
+        success: false,
+        message: "Document name is required",
+      });
+      return;
+    }
+    const document = await prismaClient.document.update({
+      where: {
+        id: documentId,
+      },
+      data: {
+        slug: name,
+      },
+    });
+    res.json({
+      success: true,
+      message: "Document renamed",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
