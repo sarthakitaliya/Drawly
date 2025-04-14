@@ -21,7 +21,12 @@ interface documentType {
   };
   members: {
     id: string;
-    name: string; 
+    role: string;
+    user: {
+      id: string;
+      name: string;
+      image: string;
+    };
   }[];
   createdAt: string;
 }
