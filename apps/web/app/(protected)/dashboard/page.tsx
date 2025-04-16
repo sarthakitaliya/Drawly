@@ -125,9 +125,8 @@ export default function Dashboard() {
           doc.id === documentId ? { ...doc, slug: newName } : doc
         );
       });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      setError("Internal server error");
     }
   };
   const handleDeleteDocument = async (documentId: string) => {
@@ -139,7 +138,6 @@ export default function Dashboard() {
       });
     } catch (error) {
       console.log(error);
-      setError("Internal server error");
     }
   };
   return (

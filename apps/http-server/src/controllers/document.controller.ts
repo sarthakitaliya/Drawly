@@ -27,13 +27,13 @@ export const getAllDocuments = async (req: Request, res: Response) => {
           select: {
             id: true,
             role: true,
-            user:{
+            user: {
               select: {
                 id: true,
                 name: true,
                 image: true,
               },
-            }
+            },
           },
         },
         createdAt: true,
@@ -215,7 +215,26 @@ export const deleteDocument = async (req: Request, res: Response) => {
       });
       return;
     }
-    const document = await prismaClient.document.delete({
+    const document = await prismaClient.document.findUnique({
+      where: {
+        id: documentId,
+      },
+    });
+    if (!document) {
+      res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+      return;
+    }
+    if (document.ownerId !== req.user.id) {
+      res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this document",
+      });
+      return;
+    }
+    await prismaClient.document.delete({
       where: {
         id: documentId,
       },
@@ -252,7 +271,26 @@ export const renameDocument = async (req: Request, res: Response) => {
       });
       return;
     }
-    const document = await prismaClient.document.update({
+    const document = await prismaClient.document.findUnique({
+      where: {
+        id: documentId,
+      },
+    });
+    if (!document) {
+      res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+      return;
+    }
+    if (document.ownerId !== req.user.id) {
+      res.status(403).json({
+        success: false,
+        message: "You are not authorized to rename this document",
+      });
+      return;
+    }
+    await prismaClient.document.update({
       where: {
         id: documentId,
       },
@@ -271,4 +309,4 @@ export const renameDocument = async (req: Request, res: Response) => {
       message: "Internal server error",
     });
   }
-}
+};

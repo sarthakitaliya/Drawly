@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { api } from "@repo/utils/api";
 import { useLoadingStore } from "./useLoadingStore";
-import { useSocketStore } from "./useSocketStore";
 
 export const useCanvasStore = create<CanvasStore>((set, get) => ({
   documentID: "",
@@ -97,15 +96,15 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       }
       const res = await api.delete(`/documents/${documentId}`);
       if (!res.data.success) {
-        useLoadingStore.getState().setError("Document deletion failed");
-        return;
+        useLoadingStore.getState().setError(res.data.message || "Document deletion failed");
       }
       const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");
       const newIds = ids.filter((id: { id: string }) => id.id !== documentId);
       localStorage.setItem("documentIds", JSON.stringify(newIds));
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      useLoadingStore.getState().setError("Internal server error");
+      useLoadingStore.getState().setError(error.response?.data?.message || "Internal server error");
+      throw new Error(error.response?.data?.message || "Document deletion failed");
     }
   },
   renameDocument: async (documentId: string, name: string) => {
@@ -122,12 +121,13 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         name,
       });
       if (!res.data.success) {
-        useLoadingStore.getState().setError("Document renaming failed");
+        useLoadingStore.getState().setError(res.data.message || "Document renaming failed");
         return;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      useLoadingStore.getState().setError("Internal server error");
+      useLoadingStore.getState().setError(error.response?.data?.message || "Internal server error");
+      throw new Error(error.response?.data?.message || "Document renaming failed");
     }
   },
   getAllMembers: async (documentId: string) => {
