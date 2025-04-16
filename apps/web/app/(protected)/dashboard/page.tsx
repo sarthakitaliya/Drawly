@@ -9,6 +9,7 @@ import PopupModel from "../../../components/PopupModel";
 import { api } from "@repo/utils/api";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { timeAgo } from "../../../utils/timeAgo";
+import Loading from "../../../components/Loading";
 
 interface documentType {
   id: string;
@@ -164,7 +165,7 @@ export default function Dashboard() {
           <h1 className="flex-1 text-right"></h1>
         </div>
         <div className="flex flex-col justify-between items-center w-full rounded-b-xl">
-          {loading && <h1 className="text-white text-2xl mt-10">Loading...</h1>}
+          {loading && <Loading />}
 
           {documents && documents.length === 0 && (
             <h1 className="text-white text-2xl mt-10">No documents found</h1>

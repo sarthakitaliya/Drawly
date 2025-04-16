@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import MsgHandler from "../../components/MsgAndError";
 import { setLocalStorage } from "../../utils/localStorage";
+import Loading from "../../components/Loading";
 
 
 export default function ProtectedLayout({
@@ -36,7 +37,7 @@ export default function ProtectedLayout({
       redirect("/api/auth/signin");
     }
   }, [session, setUser]);
-  if (status == "loading") return <h1>Loading...</h1>;
+  if (status == "loading") return <Loading/>;
 
   if (!session?.user) redirect("/api/auth/signin");
   return (

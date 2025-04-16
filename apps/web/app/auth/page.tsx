@@ -3,10 +3,11 @@ import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiExcalidraw } from "react-icons/si";
+import Loading from "../../components/Loading";
 
 export default function SigninPage() {
   const { data: session, status } = useSession();
-  if (status == "loading") return <h1>Loading...</h1>;
+  if (status == "loading") return <Loading />;
   if (session) {
     redirect("/dashboard")
   }
