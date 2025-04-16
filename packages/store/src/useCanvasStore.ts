@@ -147,6 +147,20 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       useLoadingStore.getState().setError("Failed to fetch members");
     }
   },
+  checkAccessForShare: async (documentId: string) => {
+    try {
+      if (!documentId) {
+        useLoadingStore.getState().setError("Document ID is required");
+        return;
+      }
+      const res = await api.post("/share/access", { documentId } );
+
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      throw new Error(error.response?.data?.message || "Failed to fetch document access");
+    }
+  },
 }));
 
 interface CanvasStore {
@@ -160,6 +174,7 @@ interface CanvasStore {
   deleteDocument: (documentId: string) => void;
   renameDocument: (documentId: string, name: string) => void;
   getAllMembers: (documentId: string) => Promise<any>;
+  checkAccessForShare: (documentId: string) => Promise<any>;
 }
 
 interface Shape {

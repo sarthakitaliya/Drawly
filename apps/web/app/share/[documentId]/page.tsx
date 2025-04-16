@@ -1,12 +1,13 @@
 "use client";
-import { useCanvasStore } from "@repo/store";
-import { useParams } from "next/navigation";
+import { useCanvasStore, useLoadingStore } from "@repo/store";
+import { redirect, useParams } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import { Draw } from "../../../utils/draw";
 import Tools from "../../../components/Tools";
 
 export default function ReadonlyPage() {
-  const { documentID, setDocumentID, getShapes } = useCanvasStore();
+  const { documentID, setDocumentID, getShapes, checkAccessForShare } = useCanvasStore();
+const { setError } = useLoadingStore();
   const { documentId } = useParams();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canva, setCanva] = useState<Draw>();
@@ -17,6 +18,21 @@ export default function ReadonlyPage() {
       setDocumentID("");
     };
   }, [documentId, setDocumentID]);
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const response = await checkAccessForShare(documentId as string);
+        console.log(response);
+        
+      } catch (error) {
+        console.error("Error checking access:", error);
+        setError("You don't have access to this document");
+        redirect("/");
+      }
+    };
+    checkAccess();
+  }
+  , [documentID]);
 
   useEffect(() => {
     if (!canvasRef.current || !documentID) return;
