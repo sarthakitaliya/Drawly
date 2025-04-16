@@ -51,11 +51,7 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("User connected");
-
-  console.log(`User ${socket.data.user.name} connected`);
   let roomId = socket.handshake.query.roomId as string;
-  console.log("roomID", roomId);
   if (!roomId) {
     console.log("Connection rejected: Missing room ID");
     socket.disconnect(true);
@@ -63,7 +59,6 @@ io.on("connection", (socket) => {
   }
 
   socket.join(roomId);
-  console.log(`User ${socket.data.user.name} joined room ${roomId}`);
 
   if (!roomUsers[roomId]) roomUsers[roomId] = [];
   roomUsers[roomId].push({ id: socket.id, name: socket.data.user.name, userId: socket.data.user.id });

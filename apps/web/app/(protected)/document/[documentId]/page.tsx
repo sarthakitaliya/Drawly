@@ -7,7 +7,7 @@ import { checkDocumentAccess } from "../../../../utils/localStorage";
 import { redirect } from "next/navigation";
 
 export default function CanvasPage() {
-  const { setShapes, addShape, getShapes, documentID, setDocumentID, getAllMembers, setIsCollaborative } =
+  const { addShape, getShapes, documentID, setDocumentID, getAllMembers, setIsCollaborative } =
     useCanvasStore();
   const { connectToSocket, isConnected, disconnect } = useSocketStore();
   const { setError } = useLoadingStore();
@@ -68,11 +68,11 @@ export default function CanvasPage() {
 
       const g = new Draw(
         canvasRef.current,
-        //@ts-ignore
-        setShapes,
-        addShape,
         documentID,
+        false,
+        //@ts-ignore
         getShapes,
+        addShape,
         socketStore
       );
       setCanva(g);
@@ -87,7 +87,7 @@ export default function CanvasPage() {
   }, [tool, canva]);
   return (
     <div>
-      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} members={members} />
+      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} members={members} isReadonly={false} />
       <canvas ref={canvasRef}></canvas>
     </div>
   );

@@ -15,6 +15,7 @@ import { useCanvasStore, useSocketStore } from "@repo/store";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import Share from "./Share";
 
 export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line";
 
@@ -23,11 +24,13 @@ export default function Tools({
   setSelectedTool,
   canva,
   members,
+  isReadonly,
 }: {
   selectedTool: Tool;
   setSelectedTool: (s: Tool) => void;
   canva: any;
   members: any[];
+  isReadonly: boolean;
 }) {
   const { data: session } = useSession();
   const { setDocumentID, isCollaborative } = useCanvasStore();
@@ -35,7 +38,7 @@ export default function Tools({
     useSocketStore();
   const router = useRouter();
   const [scale, setScale] = useState(1);
-
+  const [isShareOpen, setIsShareOpen] = useState(false);
   useEffect(() => {
     const updateScale = () => {
       if (canva) {
@@ -86,6 +89,7 @@ export default function Tools({
   };
   return (
     <div>
+      {isShareOpen && <Share OnClose={() => setIsShareOpen(false)} />}
       <div
         style={{
           position: "fixed",
@@ -97,10 +101,17 @@ export default function Tools({
       >
         <div className="px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
           <IconButton
-            onClick={onClickDashboard}
+            onClick={() => {
+              if (isReadonly) {
+                router.push("/api/auth/signin");
+                return;
+              } else {
+                onClickDashboard();
+              }
+            }}
             icon={<LayoutDashboard size={20} color="white" />}
-            title="Dashboard"
-          />
+            title={isReadonly ? "Login" : "Dashboard"}
+          /> 
         </div>
         <div className="flex gap-3 items-center justify-center px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
           <IconButton
@@ -114,54 +125,62 @@ export default function Tools({
 
           <IconButton
             onClick={() => {
+              if (isReadonly) return;
               setSelectedTool("rect");
             }}
             activated={selectedTool === "rect"}
             icon={<Square size={20} />}
-            title="Rectangle"
+            title={isReadonly ? "Read-only mode" : "Rectangle"}
           />
 
           <IconButton
             onClick={() => {
+              if (isReadonly) return;
               setSelectedTool("rhombus");
             }}
             activated={selectedTool === "rhombus"}
             icon={<Diamond size={20} />}
-            title="Rhombus"
+            title={isReadonly ? "Read-only mode" : "Rhombus"}
           />
 
           <IconButton
             onClick={() => {
+              if (isReadonly) return;
               setSelectedTool("circle");
             }}
             activated={selectedTool === "circle"}
             icon={<Circle size={20} />}
-            title="Circle"
+            title={isReadonly ? "Read-only mode" : "Circle"}
           />
 
           <IconButton
             onClick={() => {
+              if (isReadonly) return;
               setSelectedTool("line");
             }}
             activated={selectedTool === "line"}
             icon={<Minus size={20} />}
-            title="Line"
+            title={isReadonly ? "Read-only mode" : "Line"}
           />
           <IconButton
-            onClick={connectToRoom}
+            onClick={() => {
+              if (isReadonly) return;
+              connectToRoom();
+            }}
             icon={<Users />}
             activated={socket as any}
             className="border border-zinc-500"
-            title="Collaborate Mode"
+            title={isReadonly ? "Read-only mode" : "Collaborative mode"}
           />
         </div>
         <div className="px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
           <IconButton
             onClick={() => {
-              console.log("Share");
+              if (isReadonly) return;
+              setIsShareOpen(!isShareOpen);
             }}
             icon={<Share2 size={20} color="white" />}
-            title="Share"
+            title={isReadonly ? "Read-only mode" : "Share"}
           />
         </div>
       </div>
@@ -175,7 +194,7 @@ export default function Tools({
       >
         <button
           onClick={handleZoomOut}
-          className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200"
+          className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200 cursor-pointer"
           title="Zoom Out"
         >
           <Minus size={18} className="text-white" />
@@ -195,7 +214,7 @@ export default function Tools({
 
         <button
           onClick={handleZoomIn}
-          className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200"
+          className="p-2 rounded-md hover:bg-zinc-700 transition-colors duration-200 cursor-pointer"
           title="Zoom In"
         >
           <Plus size={18} className="text-white" />

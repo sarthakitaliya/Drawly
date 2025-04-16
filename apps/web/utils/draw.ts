@@ -39,8 +39,7 @@ export class Draw {
   private clicked: boolean;
   private startX = 0;
   private startY = 0;
-  private selectedTool: Tool = "circle";
-  private setShapes: (shapes: Shape) => void;
+  private selectedTool: Tool = "rect";
   private documentID: string;
   private addShape: (shape: Shape, documentID: string) => void;
   private getShapes: (documentId: string) => Promise<Shape[]>;
@@ -51,36 +50,42 @@ export class Draw {
   private offset: { x: number; y: number } = { x: 0, y: 0 };
   private panStart: { x: number; y: number } = { x: 0, y: 0 };
   private scale: number = 1;
+  private isReadonly: boolean = false;
   constructor(
     canvas: HTMLCanvasElement,
-    setShapes: (shapes: Shape) => void,
-    addShape: (shape: Shape, documentID: string) => void,
     documentID: string,
+    isReadonly: boolean = false,
     getShapes: (documentId: string) => Promise<Shape[]>,
-    socketStore: any
+    addShape?: (shape: Shape, documentID: string) => void,
+    socketStore?: any,
   ) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.ctx = canvas.getContext("2d")!;
     this.clicked = false;
-    this.socketStore = socketStore;
-    this.getShapes = getShapes;
-    this.setShapes = setShapes;
+    this.isReadonly = isReadonly;
     this.documentID = documentID;
-    this.addShape = addShape;
+    this.getShapes = getShapes;
+
+    this.socketStore = socketStore ?? {};
+    this.addShape = addShape ?? (() => {});
     this.socket = socketStore?.socket || null;
     this.isCollaborative = !!socketStore?.isConnected;
+
     this.init();
     this.initMouseHandlers();
   }
 
   async init() {
+    console.log("init", this.documentID);
+    
     if (!this.documentID) return;
 
     try {
       // Load existing shapes
-      const shapes = await this.getShapes(this.documentID);
+
+      const shapes = await this.getShapes(this.documentID, this.isReadonly);
       this.existingShapes = Array.isArray(shapes) ? shapes : [];
 
       // Initialize socket events only for collaborative mode
@@ -208,6 +213,7 @@ export class Draw {
       this.canvas.style.cursor = "grabbing";
       return;
     }
+    if(this.isReadonly) return;
     this.clicked = true;
     this.startX = (e.clientX - this.offset.x) / this.scale;
     this.startY = (e.clientY - this.offset.y) / this.scale;
@@ -299,6 +305,7 @@ export class Draw {
       this.clearCanvas();
       return;
     }
+    if(this.isReadonly) return;
     if (this.clicked) {
       const x = (e.clientX - this.offset.x) / this.scale;
       const y = (e.clientY - this.offset.y) / this.scale;
@@ -382,6 +389,8 @@ export class Draw {
   }
 
   initMouseHandlers() {
+    console.log("init mouse handlers", this.isReadonly);
+    
     this.canvas.addEventListener("mousedown", this.mouseDownHanler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);

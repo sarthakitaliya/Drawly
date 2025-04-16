@@ -13,7 +13,6 @@ export default function DocumentLayout({
     useCanvasStore();
   const { documentId } = useParams();
   useEffect(() => {
-      console.log("I am in the document layout");
       setDocumentID(documentId as string);
     return () => {
       setDocumentID("");

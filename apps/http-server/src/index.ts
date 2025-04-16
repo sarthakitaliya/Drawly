@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { protectRoute } from "./middleware/auth.middleware";
 import documentRoute from "./routes/document.route";
 import roomRoute from "./routes/room.route";
+import shareRoute from "./routes/share.route";
 
 dotenv.config();
 
@@ -30,5 +31,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/documents", protectRoute, documentRoute);
 app.use("/api/room", protectRoute, roomRoute);
+app.use("/api/share", shareRoute)
 
 app.listen(3001);

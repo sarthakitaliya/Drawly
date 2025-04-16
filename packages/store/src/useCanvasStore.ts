@@ -4,7 +4,6 @@ import { useLoadingStore } from "./useLoadingStore";
 import { useSocketStore } from "./useSocketStore";
 
 export const useCanvasStore = create<CanvasStore>((set, get) => ({
-  shapes: [],
   documentID: "",
   isCollaborative: false,
   setIsCollaborative: (isCollaborative: boolean) => {
@@ -16,16 +15,18 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   createDocument: async (slug: string) => {
     try {
       useLoadingStore.getState().setLoading(true);
-      const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");  
-      
+      const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");
+
       const res = await api.post("/documents", {
         slug,
       });
       if (res.data.success === true) {
-        ids.push({ id: res.data.createDoc.id, isCollaborative: res.data.createDoc.isCollaborative });
+        ids.push({
+          id: res.data.createDoc.id,
+          isCollaborative: res.data.createDoc.isCollaborative,
+        });
         localStorage.setItem("documentIds", JSON.stringify(ids));
-        set({ documentID: res.data.createDoc.id }); 
-        
+        set({ documentID: res.data.createDoc.id });
       }
       useLoadingStore.getState().setLoading(false);
       return res.data.createDoc.id;
@@ -36,10 +37,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     }
   },
   addShape: async (shape, documentId) => {
-
     try {
-      console.log("from the addShape",get().documentID);
-      
+      console.log("from the addShape", get().documentID);
+
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
         return;
@@ -60,23 +60,27 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       useLoadingStore.getState().setLoading(false);
     }
   },
-  setShapes: (shapes) => {
-    set({ shapes: [...get().shapes, shapes] });
-  },
-  getShapes: async (documentId: string) => {
+  getShapes: async (documentId: string, isReadonly: boolean = false) => {
     try {
+      console.log("from the getShapes", get().documentID);
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
-        
+
         return;
       }
       useLoadingStore.getState().setLoading(true);
-      const res = await api.post("/documents/shapes", {
-        documentId,
-      });
-      if (res.data.success === true) {
-        return res.data.shapes;
-        
+      if (isReadonly) {
+        const res = await api.get(`/share/shapes/${documentId}`);
+        if (res.data.success === true) {
+          return res.data.shapes;
+        }
+      } else {
+        const res = await api.post("/documents/shapes", {
+          documentId
+        });
+        if (res.data.success === true) {
+          return res.data.shapes;
+        }
       }
       useLoadingStore.getState().setLoading(false);
     } catch (error) {
@@ -128,11 +132,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
   getAllMembers: async (documentId: string) => {
     try {
-      if(!documentId){
+      if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
         return;
       }
-      const res = await api.get(`/room/members/${documentId}` );
+      const res = await api.get(`/room/members/${documentId}`);
       if (res.data.success === true) {
         return res.data.members;
       }
@@ -142,8 +146,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       console.log(error);
       useLoadingStore.getState().setError("Failed to fetch members");
     }
-  }
-
+  },
 }));
 
 interface CanvasStore {
@@ -152,10 +155,8 @@ interface CanvasStore {
   isCollaborative: boolean;
   setIsCollaborative: (isCollaborative: boolean) => void;
   setDocumentID: (id: string) => void;
-  shapes: Shape[];
   addShape: (shape: Shape, documentId: string) => void;
-  setShapes: (shapes: Shape) => void;
-  getShapes: (documentId: string) => Promise<Shape[] | []>;
+  getShapes: (documentId: string, isReadonly: boolean) => Promise<Shape[] | []>;
   deleteDocument: (documentId: string) => void;
   renameDocument: (documentId: string, name: string) => void;
   getAllMembers: (documentId: string) => Promise<any>;
