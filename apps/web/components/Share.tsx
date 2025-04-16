@@ -1,70 +1,91 @@
+"use client";
+
 import { useCanvasStore } from "@repo/store";
 import { X, Copy } from "lucide-react";
 import { useState } from "react";
 
 export default function Share({
-    OnClose
+  OnClose,
 }: {
-    OnClose: () => void;
+  OnClose: () => void;
 }) {
-    const { isCollaborative, documentID } = useCanvasStore();
-    const [copied, setCopied] = useState(false);
-    
-    const shareURL = `${window.origin}/share/${documentID}`;
+  const { isCollaborative, documentID } = useCanvasStore();
+  const [copied, setCopied] = useState(false);
+  const shareURL = `${window.origin}/share/${documentID}`;
 
-    const handleCopy = async () => {
-        await navigator.clipboard.writeText(shareURL);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(shareURL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    return (
-        <div
-            className="fixed inset-0 bg-[#050608ab] flex items-center justify-center z-50"
-            onClick={OnClose}
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4"
+      onClick={OnClose}
+    >
+      <div
+        className="bg-[#232329] text-white rounded-2xl p-6 w-full max-w-md shadow-xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={OnClose}
+          className="absolute top-3 right-4 text-white hover:text-red-400 transition-colors"
         >
-            <div
-                className="bg-[#232329] relative w-[32rem] h-auto min-h-[11rem] px-6 py-5 rounded-2xl border border-gray-600 text-white"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <button
-                    onClick={OnClose}
-                    className="absolute top-3 right-4 text-white hover:text-red-400 transition-colors"
-                >
-                    <X size={20} />
-                </button>
+          <X size={20} />
+        </button>
 
-                {isCollaborative ? (
-                    <div className="space-y-7">
-                        <p className="text-sm text-gray-400">
-                            Anyone with this link can <span className="font-medium text-white">view</span> the document:
-                        </p>
-                        <div className="flex items-center bg-[#1c1c1f] border border-gray-500 rounded-md px-3 py-2">
-                            <input
-                                readOnly
-                                value={shareURL}
-                                className="bg-transparent text-white text-sm flex-1 outline-none"
-                            />
-                            <button
-                                onClick={handleCopy}
-                                className="ml-3 text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center"
-                            >
-                                <Copy size={16} className="mr-1" />
-                                {copied ? "Copied!" : "Copy"}
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="m-9 text-center space-y-2">
-                        <h1 className="text-lg font-medium">
-                            This document isn't collaborative yet.
-                        </h1>
-                        <p className="text-sm text-gray-400">
-                            Enable collaboration to generate a view-only link.
-                        </p>
-                    </div>
-                )}
+        {isCollaborative ? (
+          <>
+            <h2 className="text-xl font-semibold mb-3">🔗 Share Document</h2>
+            <p className="text-sm text-gray-300 mb-6">
+              Share this link to allow others to <span className="text-white font-medium">view</span> the document.
+            </p>
+
+            <div className="mb-4">
+              <label className="text-sm font-medium mb-1 block">Shareable Link</label>
+              <div className="flex gap-2 items-center">
+                <input
+                  readOnly
+                  className="bg-zinc-800 rounded-lg px-3 py-2 w-full text-sm border border-zinc-700"
+                  value={shareURL}
+                />
+                <button
+                  onClick={handleCopy}
+                  className="hover:bg-zinc-700 p-2 rounded-md border border-zinc-600"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+              </div>
+              {copied && (
+                <p className="text-xs text-green-400 mt-1">Copied Link!</p>
+              )}
             </div>
-        </div>
-    );
+
+            <div className="flex justify-end">
+              <button
+                onClick={OnClose}
+                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
+              >
+                Got it
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="text-center space-y-4 py-8">
+            <h2 className="text-lg font-medium">🚫 Not Collaborative</h2>
+            <p className="text-sm text-gray-400 px-2">
+              This document isn't in collaborative mode yet. Enable collaboration to generate a view-only link.
+            </p>
+            <button
+              onClick={OnClose}
+              className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
+            >
+              Got it
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

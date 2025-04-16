@@ -18,7 +18,6 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       );
       const findId = cachedDocuments.find((doc: any) => doc.id === documentId);
       if (findId.isCollaborative) {
-        useLoadingStore.getState().setMsg("Document is already collaborative");
         return;
       }
 
@@ -40,7 +39,6 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   connectToSocket: (url, documentId) => {
     
     if (get().isConnected || get().socket) {
-      useLoadingStore.getState().setMsg("Already connected to socket");
       return;
     }
 

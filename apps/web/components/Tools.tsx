@@ -11,11 +11,12 @@ import {
   Users,
   Plus,
 } from "lucide-react";
-import { useCanvasStore, useSocketStore } from "@repo/store";
+import { useCanvasStore, useSocketStore, useLoadingStore } from "@repo/store";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import Share from "./Share";
+import CollabModel from "./CollaborativePopup";
 
 export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line";
 
@@ -36,9 +37,12 @@ export default function Tools({
   const { setDocumentID, isCollaborative } = useCanvasStore();
   const { convertToCollab, connectToSocket, socket, disconnect, onlineUsers } =
     useSocketStore();
+  const loadingStore = useLoadingStore();
   const router = useRouter();
   const [scale, setScale] = useState(1);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [collaborativeOpen, setCollaborativeOpen] = useState(false);
+
   useEffect(() => {
     const updateScale = () => {
       if (canva) {
@@ -73,12 +77,31 @@ export default function Tools({
   };
 
   const connectToRoom = async () => {
-    convertToCollab(canva.documentID);
-    connectToSocket(
-      process.env.NEXT_PUBLIC_SOCKET_URL as string,
-      canva.documentID
-    );
+    try {
+      if (!canva?.documentID) return;
+      
+      // First convert to collaborative mode
+      await convertToCollab(canva.documentID);
+      
+      // Then connect to socket
+      connectToSocket(
+        process.env.NEXT_PUBLIC_SOCKET_URL as string,
+        canva.documentID
+      );
+    } catch (error) {
+      console.error("Failed to connect to room:", error);
+      loadingStore.setError("Failed to enable collaborative mode");
+    }
   };
+
+  const handleCollaborativeClick = () => {
+    if (isReadonly) return;
+    setCollaborativeOpen(!collaborativeOpen);
+    if (!collaborativeOpen) {
+      connectToRoom();
+    }
+  };
+
   const onClickDashboard = () => {
     setDocumentID("");
     router.push("/dashboard");
@@ -90,6 +113,7 @@ export default function Tools({
   return (
     <div>
       {isShareOpen && <Share OnClose={() => setIsShareOpen(false)} />}
+      {collaborativeOpen && <CollabModel setCollaborativeOpen={setCollaborativeOpen} />}
       <div
         style={{
           position: "fixed",
@@ -111,7 +135,7 @@ export default function Tools({
             }}
             icon={<LayoutDashboard size={20} color="white" />}
             title={isReadonly ? "Login" : "Dashboard"}
-          /> 
+          />
         </div>
         <div className="flex gap-3 items-center justify-center px-4 py-1 rounded-lg shadow-lg bg-zinc-800">
           <IconButton
@@ -163,10 +187,7 @@ export default function Tools({
             title={isReadonly ? "Read-only mode" : "Line"}
           />
           <IconButton
-            onClick={() => {
-              if (isReadonly) return;
-              connectToRoom();
-            }}
+            onClick={handleCollaborativeClick}
             icon={<Users />}
             activated={socket as any}
             className="border border-zinc-500"
