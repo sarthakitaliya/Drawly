@@ -8,6 +8,20 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   socket: null,
   isConnected: false,
   onlineUsers: [],
+  OtherCursors: {},
+  setOtherCursors: (cursor: IncomingCursor) => {
+    set((state) => ({
+      OtherCursors: {
+        ...state.OtherCursors,
+        [cursor.roomId]: {
+          x: cursor.x,
+          y: cursor.y,
+          userName: cursor.userName,
+          color: cursor.color,
+        }
+      }
+    }));
+  },
   setOnlineUsers: (users) => {
     set({ onlineUsers: users });
   },
@@ -37,12 +51,11 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     }
   },
   connectToSocket: (url, documentId) => {
-    
     if (get().isConnected || get().socket) {
       return;
     }
 
-    if(!documentId) {
+    if (!documentId) {
       useLoadingStore.getState().setMsg("Document id is required");
       return;
     }
@@ -52,7 +65,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       query: { roomId: documentId },
       transports: ["websocket"],
     });
-    
+
     socket.on("connect", () => {
       console.log("Socket connected successfully");
       set({ socket, isConnected: true });
@@ -74,28 +87,43 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     socket.on("user-left", (data) => {
       set({ onlineUsers: data.users });
       console.log(get().onlineUsers);
-       
+
       useLoadingStore.getState().setMsg(`${data.name} left`);
     });
 
-    socket.on("disconnect", (reason) => {
-      console.log("Disconnected from socket")
-      console.log(reason);
+    socket.on("cursor-move", (data) => {
+      console.log("Cursor moved", data);
+      set((state) => ({
+        OtherCursors: {
+          ...state.OtherCursors,
+          [data.roomId]: {
+            x: data.x,
+            y: data.y,
+            userName: data.userName,
+            color: data.color,
+          },
+        },
+      }));
+      console.log(get().OtherCursors);
+    });
       
+    socket.on("disconnect", (reason) => {
+      console.log("Disconnected from socket");
+      console.log(reason);
+
       set({ socket: null, isConnected: false });
     });
-    socket.on("connect_error", (error) => { 
+    socket.on("connect_error", (error) => {
       console.log(error);
-      
+
       console.log(error.message);
       set({ socket: null, isConnected: false });
     });
     socket.on("error", (error) => {
-      console.log(error); 
+      console.log(error);
       set({ socket: null, isConnected: false });
     });
     return socket;
-
   },
   setSocket: (socket) => {
     set({ socket });
@@ -117,13 +145,31 @@ type Element = {
   width?: number;
   height?: number;
 };
+
+type UserCursor = {
+  x: number;
+  y: number;
+  userName: string;
+  color: string;
+};
+
+type IncomingCursor = {
+  roomId: string;
+  x: number;
+  y: number;
+  userName: string;
+  color: string;
+}
+
 interface SocketStore {
   socket: Socket | null;
   onlineUsers: any[];
+  OtherCursors: Record<string, UserCursor>;
+  setOtherCursors: (cursor: IncomingCursor) => void;
   setOnlineUsers: (users: any[]) => void;
   isConnected: boolean;
   connectToSocket: (url: string, documentId: string) => any;
-  setSocket: (socket: Socket) => void
+  setSocket: (socket: Socket) => void;
   convertToCollab: (documentId: string) => void;
   disconnect: () => void;
 }

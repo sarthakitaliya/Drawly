@@ -377,6 +377,18 @@ export class Draw {
     this.clearCanvas();
   };
   
+  handleCursor = (e: MouseEvent) => {
+    if(this.isCollaborative && this.socket?.connected){
+      const mouseX = (e.clientX - this.offset.x) / this.scale;
+      const mouseY = (e.clientY - this.offset.y) / this.scale;
+      this.socket.emit("cursor-move", { 
+        x: mouseX, 
+        y: mouseY, 
+        roomId: this.documentID 
+      });
+    }
+  }
+  
   getScale(): number {
     return this.scale;
   }
@@ -395,6 +407,7 @@ export class Draw {
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
     this.canvas.addEventListener("wheel", this.handleZoom);
+    this.canvas.addEventListener("mousemove", this.handleCursor);
   }
 
   destroy() {

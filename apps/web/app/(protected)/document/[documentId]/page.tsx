@@ -5,6 +5,7 @@ import { Draw } from "../../../../utils/draw";
 import { useCanvasStore, useLoadingStore, useSocketStore } from "@repo/store";
 import { checkDocumentAccess } from "../../../../utils/localStorage";
 import { redirect } from "next/navigation";
+import OtherCursors from "../../../../components/otherCursors";
 
 export default function CanvasPage() {
   const { addShape, getShapes, documentID, setDocumentID, getAllMembers, setIsCollaborative } =
@@ -87,6 +88,7 @@ export default function CanvasPage() {
   }, [tool, canva]);
   return (
     <div>
+      <OtherCursors />
       <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} members={members} isReadonly={false} />
       <canvas ref={canvasRef}></canvas>
     </div>

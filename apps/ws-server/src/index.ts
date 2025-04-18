@@ -105,7 +105,25 @@ io.on("connection", (socket) => {
       });
     }
   });
+  function generateRandomColor(name: string) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = hash % 360;
+    return `hsl(${hue}, 80%, 70%)`; 
+  }
 
+  socket.on("cursor-move", (data: { x: number; y: number; roomId: string }) => {
+    console.log("cursor-update", data);
+    socket.broadcast.to(data.roomId).emit("cursor-move", {
+      x: data.x,
+      y: data.y,
+      userName: socket.data.user.name,
+      roomId: data.roomId,
+      color: generateRandomColor(socket.data.user.name),
+    });
+  });
   socket.on("disconnect", () => {
     console.log(`User ${socket.data.user.name} disconnected`);
     for (const roomId in roomUsers) {
