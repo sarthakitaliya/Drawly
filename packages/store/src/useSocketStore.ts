@@ -13,7 +13,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     set((state) => ({
       OtherCursors: {
         ...state.OtherCursors,
-        [cursor.roomId]: {
+        [cursor.userId]: {
           x: cursor.x,
           y: cursor.y,
           userName: cursor.userName,
@@ -86,25 +86,33 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     });
     socket.on("user-left", (data) => {
       set({ onlineUsers: data.users });
-      console.log(get().onlineUsers);
-
       useLoadingStore.getState().setMsg(`${data.name} left`);
     });
 
     socket.on("cursor-move", (data) => {
-      console.log("Cursor moved", data);
       set((state) => ({
         OtherCursors: {
           ...state.OtherCursors,
-          [data.roomId]: {
+          [data.userId]: {
             x: data.x,
             y: data.y,
             userName: data.userName,
             color: data.color,
           },
         },
+        
       }));
       console.log(get().OtherCursors);
+    });
+
+    socket.on("cursor-remove", (data) => {
+      const updatedCursors = { ...get().OtherCursors };
+      delete updatedCursors[data.userId];
+      console.log("updatedCursors", updatedCursors);
+      set({ OtherCursors: updatedCursors });
+      console.log("cursor-remove", data);
+      console.log("cursor-remove", get().OtherCursors);
+      
     });
       
     socket.on("disconnect", (reason) => {
@@ -159,6 +167,7 @@ type IncomingCursor = {
   y: number;
   userName: string;
   color: string;
+  userId: string;
 }
 
 interface SocketStore {

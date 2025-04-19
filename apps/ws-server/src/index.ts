@@ -117,6 +117,7 @@ io.on("connection", (socket) => {
   socket.on("cursor-move", (data: { x: number; y: number; roomId: string }) => {
     console.log("cursor-update", data);
     socket.broadcast.to(data.roomId).emit("cursor-move", {
+      userId: socket.data.user.id,
       x: data.x,
       y: data.y,
       userName: socket.data.user.name,
@@ -134,6 +135,9 @@ io.on("connection", (socket) => {
       socket.broadcast.to(roomId).emit("user-left", {
         name: socket.data.user.name,
         users: roomUsers[roomId],
+      });
+      socket.emit("cursor-remove", {
+        userId: socket.data.user.id
       });
     }
     console.log("lefter", roomUsers);

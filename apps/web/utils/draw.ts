@@ -30,6 +30,10 @@ type Shape =
       y: number;
       x2: number;
       y2: number;
+    } |
+    {
+      type: "line";
+      points: { x: number; y: number }[];
     };
 
 export class Draw {
@@ -415,6 +419,7 @@ export class Draw {
     this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
     this.canvas.removeEventListener("wheel", this.handleZoom);
+    this.canvas.removeEventListener("mousemove", this.handleCursor);
     if (this.socket) {
       this.socket.disconnect();
     }

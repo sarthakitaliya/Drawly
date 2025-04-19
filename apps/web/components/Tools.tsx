@@ -10,6 +10,7 @@ import {
   Share2,
   Users,
   Plus,
+  Pencil,
 } from "lucide-react";
 import { useCanvasStore, useSocketStore, useLoadingStore } from "@repo/store";
 import { useEffect, useState } from "react";
@@ -79,10 +80,10 @@ export default function Tools({
   const connectToRoom = async () => {
     try {
       if (!canva?.documentID) return;
-      
+
       // First convert to collaborative mode
       await convertToCollab(canva.documentID);
-      
+
       // Then connect to socket
       connectToSocket(
         process.env.NEXT_PUBLIC_SOCKET_URL as string,
@@ -113,7 +114,9 @@ export default function Tools({
   return (
     <div>
       {isShareOpen && <Share OnClose={() => setIsShareOpen(false)} />}
-      {collaborativeOpen && <CollabModel setCollaborativeOpen={setCollaborativeOpen} />}
+      {collaborativeOpen && (
+        <CollabModel setCollaborativeOpen={setCollaborativeOpen} />
+      )}
       <div
         style={{
           position: "fixed",
@@ -184,6 +187,15 @@ export default function Tools({
             }}
             activated={selectedTool === "line"}
             icon={<Minus size={20} />}
+            title={isReadonly ? "Read-only mode" : "Line"}
+          />
+          <IconButton
+            onClick={() => {
+              if (isReadonly) return;
+              setSelectedTool("line");
+            }}
+            activated={selectedTool === "line"}
+            icon={<Pencil size={20} />}
             title={isReadonly ? "Read-only mode" : "Line"}
           />
           <IconButton
