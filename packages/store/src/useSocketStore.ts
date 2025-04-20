@@ -102,7 +102,6 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
         },
         
       }));
-      console.log(get().OtherCursors);
     });
 
     socket.on("cursor-remove", (data) => {

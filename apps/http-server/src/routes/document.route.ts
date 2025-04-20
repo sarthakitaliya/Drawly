@@ -1,5 +1,5 @@
 import express, { Router } from "express";  
-import { createDocument, getAllDocuments, getAllShapes, addShape, authorizeDocumentAccess, deleteDocument, renameDocument } from "../controllers/document.controller";
+import { createDocument, getAllDocuments, getAllShapes, addShape, authorizeDocumentAccess, deleteDocument, renameDocument, clearShapes } from "../controllers/document.controller";
 
 const router: Router = express.Router();
 
@@ -21,5 +21,8 @@ router.delete("/:documentId", deleteDocument)
 
 // rename document
 router.put("/:documentId", renameDocument)
+
+//clear document
+router.delete("/clear/:documentId", clearShapes)
 
 export default router;

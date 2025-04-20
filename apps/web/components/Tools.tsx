@@ -11,6 +11,7 @@ import {
   Users,
   Plus,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import { useCanvasStore, useSocketStore, useLoadingStore } from "@repo/store";
 import { useEffect, useState } from "react";
@@ -35,7 +36,7 @@ export default function Tools({
   isReadonly: boolean;
 }) {
   const { data: session } = useSession();
-  const { setDocumentID, isCollaborative } = useCanvasStore();
+  const { setDocumentID, isCollaborative, clearCanvas } = useCanvasStore();
   const { convertToCollab, connectToSocket, socket, disconnect, onlineUsers } =
     useSocketStore();
   const loadingStore = useLoadingStore();
@@ -197,6 +198,15 @@ export default function Tools({
             activated={selectedTool === "freehand"}
             icon={<Pencil size={20} />}
             title={isReadonly ? "Read-only mode" : "Line"}
+          />
+          <div className="w-[1px] h-6 bg-zinc-600 mx-2" />
+          <IconButton
+            onClick={() => {
+              if (isReadonly) return;
+              canva.clearCanvas();
+            }}
+            icon={< Trash2 size={20} />}
+            title={isReadonly ? "Read-only mode" : "Text"}
           />
           <IconButton
             onClick={handleCollaborativeClick}

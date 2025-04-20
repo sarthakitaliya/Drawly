@@ -122,6 +122,10 @@ io.on("connection", (socket) => {
       color: generateRandomColor(socket.data.user.name),
     });
   });
+
+  socket.on("clear-canvas", ({ roomId }: { roomId: string }) => { 
+    socket.to(roomId).emit("clear-canvas", { roomId });
+  });
   socket.on("disconnect", () => {
     console.log(`User ${socket.data.user.name} disconnected`);
     for (const roomId in roomUsers) {

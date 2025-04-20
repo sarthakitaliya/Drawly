@@ -1,6 +1,6 @@
 import { Tool } from "../components/Tools";
 import { checkDocumentAccess } from "./localStorage";
-import { useSocketStore, useLoadingStore } from "@repo/store";
+import { useCanvasStore, useLoadingStore } from "@repo/store";
 
 type Shape =
   | {
@@ -98,7 +98,7 @@ export class Draw {
         this.initSocketEvents();
       }
 
-      this.clearCanvas();
+      this.redraw();
     } catch (error) {
       console.error("Failed to initialize canvas:", error);
       useLoadingStore.getState().setError("Failed to load shapes");
@@ -114,8 +114,13 @@ export class Draw {
       if (!data) return;
       console.log(data);
       this.existingShapes.push(data);
-      this.clearCanvas();
+      this.redraw();
       console.log(this.existingShapes);
+    });
+    this.socket.on("clear-canvas", (data: { roomId: string }) => {
+      console.log("clear canvas come come");
+      this.existingShapes = [];
+      this.redraw();
     });
   }
 
@@ -179,7 +184,7 @@ export class Draw {
 
   drawFreehand(shape: Shape) {
     console.log(shape);
-    
+
     if (shape?.type == "freehand") {
       if (!shape.points || shape.points.length < 2) return;
 
@@ -199,7 +204,27 @@ export class Draw {
       this.ctx.stroke();
     }
   }
-  clearCanvas() {
+  clearCanvas = async () => {
+    console.log(this.documentID);
+    try {
+      const res = await useCanvasStore.getState().clearCanvas(this.documentID);
+      //@ts-ignore
+      if (res) {
+        this.existingShapes = [];
+        this.redraw();
+      }
+    } catch (error: any) {
+      return;
+    }
+    if (this.isCollaborative) {
+      if (!this.socket?.connected) {
+        useLoadingStore.getState().setMsg("Please refresh the page");
+        return;
+      }
+      this.socket.emit("clear-canvas", { roomId: this.documentID });
+    }
+  }
+  redraw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#18181B";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -324,7 +349,7 @@ export class Draw {
 
     // Add shape to local state
     this.existingShapes.push(shape);
-    this.clearCanvas();
+    this.redraw();
 
     if (this.isCollaborative) {
       if (!this.socket?.connected) {
@@ -345,7 +370,7 @@ export class Draw {
       this.offset.x += dx;
       this.offset.y += dy;
       this.panStart = { x: e.clientX, y: e.clientY };
-      this.clearCanvas();
+      this.redraw();
       return;
     }
     if (this.isReadonly) return;
@@ -355,7 +380,7 @@ export class Draw {
       const width = x - this.startX;
       const height = y - this.startY;
 
-      this.clearCanvas();
+      this.redraw();
       this.ctx.save();
       this.ctx.translate(this.offset.x, this.offset.y);
       this.ctx.scale(this.scale, this.scale);
@@ -422,7 +447,7 @@ export class Draw {
     this.offset.x = mouseX - worldX * this.scale;
     this.offset.y = mouseY - worldY * this.scale;
 
-    this.clearCanvas();
+    this.redraw();
   };
 
   handleCursor = (e: MouseEvent) => {
@@ -445,7 +470,7 @@ export class Draw {
     this.scale = 1;
     this.offset.x = 0;
     this.offset.y = 0;
-    this.clearCanvas();
+    this.redraw();
   }
 
   initMouseHandlers() {

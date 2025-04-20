@@ -319,3 +319,51 @@ export const renameDocument = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const clearShapes = async (req: Request, res: Response) => {
+  try {
+    const { documentId } = req.params;
+
+    if (!documentId) {
+      res.status(400).json({
+        success: false,
+        message: "Document ID is required",
+      });
+      return;
+    }
+    const document = await prismaClient.document.findUnique({
+      where: {
+        id: documentId,
+      },
+    });
+    if (!document) {
+      res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+      return;
+    }
+    if (document.ownerId !== req.user.id) {
+      res.status(403).json({
+        success: false,
+        message: "You are not authorized to clear shapes in this document",
+      });
+      return;
+    }
+    await prismaClient.shape.deleteMany({
+      where: {
+        documentId,
+      },
+    });
+    res.json({
+      success: true,
+      message: "Shapes cleared",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}

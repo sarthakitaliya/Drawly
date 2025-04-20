@@ -75,7 +75,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         }
       } else {
         const res = await api.post("/documents/shapes", {
-          documentId
+          documentId,
         });
         if (res.data.success === true) {
           return res.data.shapes;
@@ -96,15 +96,21 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       }
       const res = await api.delete(`/documents/${documentId}`);
       if (!res.data.success) {
-        useLoadingStore.getState().setError(res.data.message || "Document deletion failed");
+        useLoadingStore
+          .getState()
+          .setError(res.data.message || "Document deletion failed");
       }
       const ids = JSON.parse(localStorage.getItem("documentIds") || "[]");
       const newIds = ids.filter((id: { id: string }) => id.id !== documentId);
       localStorage.setItem("documentIds", JSON.stringify(newIds));
     } catch (error: any) {
       console.log(error);
-      useLoadingStore.getState().setError(error.response?.data?.message || "Internal server error");
-      throw new Error(error.response?.data?.message || "Document deletion failed");
+      useLoadingStore
+        .getState()
+        .setError(error.response?.data?.message || "Internal server error");
+      throw new Error(
+        error.response?.data?.message || "Document deletion failed"
+      );
     }
   },
   renameDocument: async (documentId: string, name: string) => {
@@ -121,13 +127,19 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         name,
       });
       if (!res.data.success) {
-        useLoadingStore.getState().setError(res.data.message || "Document renaming failed");
+        useLoadingStore
+          .getState()
+          .setError(res.data.message || "Document renaming failed");
         return;
       }
     } catch (error: any) {
       console.log(error);
-      useLoadingStore.getState().setError(error.response?.data?.message || "Internal server error");
-      throw new Error(error.response?.data?.message || "Document renaming failed");
+      useLoadingStore
+        .getState()
+        .setError(error.response?.data?.message || "Internal server error");
+      throw new Error(
+        error.response?.data?.message || "Document renaming failed"
+      );
     }
   },
   getAllMembers: async (documentId: string) => {
@@ -153,12 +165,34 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         useLoadingStore.getState().setError("Document ID is required");
         return;
       }
-      const res = await api.post("/share/access", { documentId } );
+      const res = await api.post("/share/access", { documentId });
 
       return res.data;
     } catch (error: any) {
       console.log(error);
-      throw new Error(error.response?.data?.message || "Failed to fetch document access");
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch document access"
+      );
+    }
+  },
+  clearCanvas: async (documentId: string) => {
+    try {
+      if (!documentId) {
+        useLoadingStore.getState().setError("Document ID is required");
+        return;
+      }
+      const res = await api.delete(`/documents/clear/${documentId}`);
+      if (res.data.success === true) {
+        return res.data.success;
+      }
+    } catch (error: any) {
+      console.log(error);
+      useLoadingStore
+        .getState()
+        .setError(error.response?.data?.message || "Failed to clear canvas");
+      throw new Error(
+        error.response?.data?.message || "Failed to clear canvas"
+      );
     }
   },
 }));
@@ -175,6 +209,7 @@ interface CanvasStore {
   renameDocument: (documentId: string, name: string) => void;
   getAllMembers: (documentId: string) => Promise<any>;
   checkAccessForShare: (documentId: string) => Promise<any>;
+  clearCanvas: (documentId: string) => void;
 }
 
 interface Shape {
