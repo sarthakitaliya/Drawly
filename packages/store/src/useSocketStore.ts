@@ -105,13 +105,11 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     });
 
     socket.on("cursor-remove", (data) => {
-      const updatedCursors = { ...get().OtherCursors };
-      delete updatedCursors[data.userId];
-      console.log("updatedCursors", updatedCursors);
-      set({ OtherCursors: updatedCursors });
-      console.log("cursor-remove", data);
-      console.log("cursor-remove", get().OtherCursors);
-      
+      set((state) => {
+        const updatedCursors = { ...state.OtherCursors };
+        delete updatedCursors[data.userId];
+        return { OtherCursors: updatedCursors };
+      });
     });
       
     socket.on("disconnect", (reason) => {

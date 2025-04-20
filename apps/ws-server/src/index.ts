@@ -137,8 +137,8 @@ io.on("connection", (socket) => {
         name: socket.data.user.name,
         users: roomUsers[roomId],
       });
-      socket.emit("cursor-remove", {
-        userId: socket.data.user.id
+      socket.broadcast.to(roomId).emit("cursor-remove", {
+        userId: socket.data.user.id, // Ensure this is emitted correctly
       });
     }
     console.log("lefter", roomUsers);
