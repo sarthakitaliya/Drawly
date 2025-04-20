@@ -197,7 +197,7 @@ export default function Tools({
             }}
             activated={selectedTool === "freehand"}
             icon={<Pencil size={20} />}
-            title={isReadonly ? "Read-only mode" : "Line"}
+            title={isReadonly ? "Read-only mode" : "Pencil"}
           />
           <div className="w-[1px] h-6 bg-zinc-600 mx-2" />
           <IconButton
@@ -206,7 +206,7 @@ export default function Tools({
               canva.clearCanvas();
             }}
             icon={< Trash2 size={20} />}
-            title={isReadonly ? "Read-only mode" : "Text"}
+            title={isReadonly ? "Read-only mode" : "Clear"}
           />
           <IconButton
             onClick={handleCollaborativeClick}
