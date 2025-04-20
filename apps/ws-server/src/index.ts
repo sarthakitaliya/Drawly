@@ -14,14 +14,7 @@ const io = new Server(4000, {
 const roomUsers: Record<string, { id: string; name: string, userId: string }[]> = {};
 
 io.use((socket, next) => {
-  console.log("hi");
-  console.log("Handshake Headers:", socket.handshake.headers);
-  console.log("Socket Handshake Query:", socket.handshake.query);
-
   try {
-    console.log("Socket Auth");
-    console.log("Socket Handshake Headers:", socket.handshake.headers);
-
     const rawCookies = socket.handshake.headers.cookie;
     if (!rawCookies) {
       return next(new Error("No cookies found"));
@@ -35,7 +28,6 @@ io.use((socket, next) => {
           cookie.startsWith("__Secure-next-auth.session-token=")
       )
       ?.split("=")[1];
-    console.log("token", token);
     if (!token) {
       return next(new Error("Authentication error"));
     }
@@ -44,7 +36,6 @@ io.use((socket, next) => {
     next();
   } catch (error) {
     console.log(error);
-
     console.error("WebSocket Authentication Failed:", error);
     next(new Error("Unauthorized"));
   }
@@ -53,7 +44,6 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   let roomId = socket.handshake.query.roomId as string;
   if (!roomId) {
-    console.log("Connection rejected: Missing room ID");
     socket.disconnect(true);
     return;
   }
@@ -92,6 +82,14 @@ io.on("connection", (socket) => {
           y2: shape.y2,
         },
       });
+    }else if(shape.type === "freehand"){
+      await prismaClient.shape.create({
+        data: {
+          type: shape.type,
+          documentId: roomId,
+          points: shape.points,
+        },
+      });
     } else {
       await prismaClient.shape.create({
         data: {
@@ -115,7 +113,6 @@ io.on("connection", (socket) => {
   }
 
   socket.on("cursor-move", (data: { x: number; y: number; roomId: string }) => {
-    console.log("cursor-update", data);
     socket.broadcast.to(data.roomId).emit("cursor-move", {
       userId: socket.data.user.id,
       x: data.x,

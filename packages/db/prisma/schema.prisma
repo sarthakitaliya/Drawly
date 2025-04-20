@@ -41,13 +41,14 @@ model Shape {
   id         String   @id @default(cuid())
   documentId String
   type       String
-  x          Float
-  y          Float
+  x          Float?
+  y          Float?
   width      Float?
   height     Float?
   x2         Float?
   y2         Float?
   color      String   @default("#FFFFFF")
+  points     Json?
   createdAt  DateTime @default(now())
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 }

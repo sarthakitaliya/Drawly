@@ -23,16 +23,16 @@ type Shape =
       y: number;
       width: number;
       height: number;
-    } |
-  {
+    }
+  | {
       type: "line";
       x: number;
       y: number;
       x2: number;
       y2: number;
-    } |
-    {
-      type: "line";
+    }
+  | {
+      type: "freehand";
       points: { x: number; y: number }[];
     };
 
@@ -43,6 +43,7 @@ export class Draw {
   private clicked: boolean;
   private startX = 0;
   private startY = 0;
+  private freehandPoints: { x: number; y: number }[] = [];
   private selectedTool: Tool = "rect";
   private documentID: string;
   private addShape: (shape: Shape, documentID: string) => void;
@@ -61,7 +62,7 @@ export class Draw {
     isReadonly: boolean = false,
     getShapes: (documentId: string) => Promise<Shape[]>,
     addShape?: (shape: Shape, documentID: string) => void,
-    socketStore?: any,
+    socketStore?: any
   ) {
     this.canvas = canvas;
     this.canvas.width = window.innerWidth;
@@ -83,7 +84,7 @@ export class Draw {
 
   async init() {
     console.log("init", this.documentID);
-    
+
     if (!this.documentID) return;
 
     try {
@@ -99,8 +100,8 @@ export class Draw {
 
       this.clearCanvas();
     } catch (error) {
-      console.error('Failed to initialize canvas:', error);
-      useLoadingStore.getState().setError('Failed to load shapes');
+      console.error("Failed to initialize canvas:", error);
+      useLoadingStore.getState().setError("Failed to load shapes");
     }
   }
 
@@ -139,10 +140,10 @@ export class Draw {
       const centerX = shape.x + shape.width / 2;
       const centerY = shape.y + shape.height / 2;
 
-      this.ctx.moveTo(centerX, shape.y); 
-      this.ctx.lineTo(shape.x + shape.width, centerY); 
-      this.ctx.lineTo(centerX, shape.y + shape.height); 
-      this.ctx.lineTo(shape.x, centerY); 
+      this.ctx.moveTo(centerX, shape.y);
+      this.ctx.lineTo(shape.x + shape.width, centerY);
+      this.ctx.lineTo(centerX, shape.y + shape.height);
+      this.ctx.lineTo(shape.x, centerY);
       this.ctx.closePath();
       this.ctx.stroke();
     }
@@ -176,6 +177,28 @@ export class Draw {
     }
   }
 
+  drawFreehand(shape: Shape) {
+    console.log(shape);
+    
+    if (shape?.type == "freehand") {
+      if (!shape.points || shape.points.length < 2) return;
+
+      this.ctx.beginPath();
+      const points = shape.points;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        if (p1 && p2) {
+          this.ctx.moveTo(p1.x, p1.y);
+          this.ctx.lineTo(p2.x, p2.y);
+        }
+      }
+      this.ctx.strokeStyle = "white"; // You can set this to dynamic colors
+      this.ctx.lineWidth = 2;
+      this.ctx.lineCap = "round";
+      this.ctx.stroke();
+    }
+  }
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#18181B";
@@ -184,7 +207,6 @@ export class Draw {
     this.ctx.translate(this.offset.x, this.offset.y);
     this.ctx.scale(this.scale, this.scale);
     // this.ctx.setTransform(1, 0, 0, 1, this.offset.x, this.offset.y); // Reset after drawing
-
 
     if (!this.existingShapes) return;
     console.log("from the draw", this.existingShapes);
@@ -205,33 +227,43 @@ export class Draw {
         case "line":
           this.drawLine(shape);
           break;
+        case "freehand":
+          this.drawFreehand(shape);
+          break;
       }
     });
     this.ctx.restore();
   }
 
   mouseDownHanler = (e: MouseEvent) => {
-    if(this.selectedTool === "hand") {
+    if (this.selectedTool === "hand") {
       this.isPanning = true;
       this.panStart = { x: e.clientX, y: e.clientY };
       this.canvas.style.cursor = "grabbing";
       return;
     }
-    if(this.isReadonly) return;
+    if (this.isReadonly) return;
+    if (this.selectedTool === "freehand") {
+      this.freehandPoints = [
+        {
+          x: (e.clientX - this.offset.x) / this.scale,
+          y: (e.clientY - this.offset.y) / this.scale,
+        },
+      ];
+    }
     this.clicked = true;
     this.startX = (e.clientX - this.offset.x) / this.scale;
     this.startY = (e.clientY - this.offset.y) / this.scale;
-    
   };
 
   mouseUpHandler = (e: MouseEvent) => {
-    if(this.isPanning) {
+    if (this.isPanning) {
       this.isPanning = false;
       this.canvas.style.cursor = "grab";
       return;
     }
     if (!this.clicked) return;
-    
+
     this.clicked = false;
     const x = (e.clientX - this.offset.x) / this.scale;
     const y = (e.clientY - this.offset.y) / this.scale;
@@ -279,6 +311,13 @@ export class Draw {
           y2: y,
         };
         break;
+      case "freehand":
+        shape = {
+          type: "freehand",
+          points: this.freehandPoints,
+        };
+        this.freehandPoints = [];
+        break;
     }
 
     if (!shape) return;
@@ -300,7 +339,7 @@ export class Draw {
   };
 
   mouseMoveHandler = (e: MouseEvent) => {
-    if(this.isPanning) {
+    if (this.isPanning) {
       const dx = e.clientX - this.panStart.x;
       const dy = e.clientY - this.panStart.y;
       this.offset.x += dx;
@@ -309,13 +348,12 @@ export class Draw {
       this.clearCanvas();
       return;
     }
-    if(this.isReadonly) return;
+    if (this.isReadonly) return;
     if (this.clicked) {
       const x = (e.clientX - this.offset.x) / this.scale;
       const y = (e.clientY - this.offset.y) / this.scale;
       const width = x - this.startX;
       const height = y - this.startY;
-  
 
       this.clearCanvas();
       this.ctx.save();
@@ -347,13 +385,19 @@ export class Draw {
           width,
           height,
         });
-      }else if (this.selectedTool === "line") {
+      } else if (this.selectedTool === "line") {
         this.drawLine({
           type: "line",
           x: this.startX,
           y: this.startY,
           x2: (e.clientX - this.offset.x) / this.scale,
           y2: (e.clientY - this.offset.y) / this.scale,
+        });
+      } else if (this.selectedTool == "freehand") {
+        this.freehandPoints.push({ x, y });
+        this.drawFreehand({
+          type: "freehand",
+          points: this.freehandPoints,
         });
       }
     }
@@ -362,37 +406,37 @@ export class Draw {
 
   handleZoom = (e: WheelEvent) => {
     e.preventDefault();
-  
+
     const zoomIntensity = 0.05;
     const zoom = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
-  
+
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-  
+
     const worldX = (mouseX - this.offset.x) / this.scale;
     const worldY = (mouseY - this.offset.y) / this.scale;
-  
+
     this.scale *= zoom;
     this.scale = Math.min(Math.max(this.scale, 0.2), 10);
 
     this.offset.x = mouseX - worldX * this.scale;
     this.offset.y = mouseY - worldY * this.scale;
-  
+
     this.clearCanvas();
   };
-  
+
   handleCursor = (e: MouseEvent) => {
-    if(this.isCollaborative && this.socket?.connected){
+    if (this.isCollaborative && this.socket?.connected) {
       const mouseX = (e.clientX - this.offset.x) / this.scale;
       const mouseY = (e.clientY - this.offset.y) / this.scale;
-      this.socket.emit("cursor-move", { 
-        x: mouseX, 
-        y: mouseY, 
-        roomId: this.documentID 
+      this.socket.emit("cursor-move", {
+        x: mouseX,
+        y: mouseY,
+        roomId: this.documentID,
       });
     }
-  }
-  
+  };
+
   getScale(): number {
     return this.scale;
   }
@@ -406,7 +450,7 @@ export class Draw {
 
   initMouseHandlers() {
     console.log("init mouse handlers", this.isReadonly);
-    
+
     this.canvas.addEventListener("mousedown", this.mouseDownHanler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);

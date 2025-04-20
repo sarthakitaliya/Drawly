@@ -19,7 +19,7 @@ import { useSession } from "next-auth/react";
 import Share from "./Share";
 import CollabModel from "./CollaborativePopup";
 
-export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line";
+export type Tool = "circle" | "rect" | "rhombus" | "hand" | "line" | "freehand";
 
 export default function Tools({
   selectedTool,
@@ -192,9 +192,9 @@ export default function Tools({
           <IconButton
             onClick={() => {
               if (isReadonly) return;
-              setSelectedTool("line");
+              setSelectedTool("freehand");
             }}
-            activated={selectedTool === "line"}
+            activated={selectedTool === "freehand"}
             icon={<Pencil size={20} />}
             title={isReadonly ? "Read-only mode" : "Line"}
           />

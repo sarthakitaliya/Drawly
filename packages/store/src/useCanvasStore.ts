@@ -59,7 +59,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       useLoadingStore.getState().setLoading(false);
     }
   },
-  getShapes: async (documentId: string, isReadonly: boolean = false) => {
+  getShapes: async (documentId, isReadonly = false) => {
     try {
       console.log("from the getShapes", get().documentID);
       if (!documentId) {

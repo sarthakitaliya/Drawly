@@ -137,7 +137,16 @@ export const addShape = async (req: Request, res: Response) => {
           y2: shape.y2,
         },
       });
-    } else {
+    }else if(shape.type === "freehand"){
+      addShape = await prismaClient.shape.create({
+        // @ts-ignore
+        data:{
+          type: shape.type,
+          documentId,
+          points: shape.points,
+        }
+      });
+    }else {
       addShape = await prismaClient.shape.create({
         data: {
           documentId,
