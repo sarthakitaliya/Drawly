@@ -61,7 +61,6 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
   getShapes: async (documentId, isReadonly = false) => {
     try {
-      console.log("from the getShapes", get().documentID);
       if (!documentId) {
         useLoadingStore.getState().setError("Document ID is required");
 
@@ -195,6 +194,22 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       );
     }
   },
+  overwriteCanvas: async (documentId, shapes) => {
+    try {
+      const res = await api.post("/documents/shapes/overwrite", { documentId, shapes });
+      if (res.data.success === true) {
+        return res.data.success;
+      }
+    } catch (error: any) {
+      console.log(error);
+      useLoadingStore
+        .getState()
+        .setError(error.response?.data?.message || "Failed to overwrite canvas");
+      throw new Error(
+        error.response?.data?.message || "Failed to overwrite canvas"
+      );
+    }
+  }
 }));
 
 interface CanvasStore {
@@ -210,6 +225,7 @@ interface CanvasStore {
   getAllMembers: (documentId: string) => Promise<any>;
   checkAccessForShare: (documentId: string) => Promise<any>;
   clearCanvas: (documentId: string) => void;
+  overwriteCanvas: (documentId: string, shapes: any) => void;
 }
 
 interface Shape {

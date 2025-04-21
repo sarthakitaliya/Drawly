@@ -1,5 +1,5 @@
 import express, { Router } from "express";  
-import { createDocument, getAllDocuments, getAllShapes, addShape, authorizeDocumentAccess, deleteDocument, renameDocument, clearShapes } from "../controllers/document.controller";
+import { createDocument, getAllDocuments, getAllShapes, addShape, authorizeDocumentAccess, deleteDocument, renameDocument, clearShapes, overwriteCanvas } from "../controllers/document.controller";
 
 const router: Router = express.Router();
 
@@ -24,5 +24,8 @@ router.put("/:documentId", renameDocument)
 
 //clear document
 router.delete("/clear/:documentId", clearShapes)
+
+// overwrite canvas
+router.post("/shapes/overwrite", overwriteCanvas)
 
 export default router;

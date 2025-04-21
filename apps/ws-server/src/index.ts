@@ -126,6 +126,15 @@ io.on("connection", (socket) => {
   socket.on("clear-canvas", ({ roomId }: { roomId: string }) => { 
     socket.to(roomId).emit("clear-canvas", { roomId });
   });
+
+  socket.on("undo-shape", ({ roomId }: { roomId: string }) => {
+    io.to(roomId).emit("undo-shape");
+  });
+
+  socket.on("redo-shape", ({ roomId }: { roomId: string }) => {
+    io.to(roomId).emit("redo-shape");
+  });
+
   socket.on("disconnect", () => {
     console.log(`User ${socket.data.user.name} disconnected`);
     for (const roomId in roomUsers) {

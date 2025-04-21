@@ -54,6 +54,7 @@ const { setError } = useLoadingStore();
         setSelectedTool={() => {}}
         canva={canva}
         members={[]}
+        setMembers={() => {}}
         isReadonly={true}
       />
       <canvas ref={canvasRef}></canvas>

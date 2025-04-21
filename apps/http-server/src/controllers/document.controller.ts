@@ -137,16 +137,16 @@ export const addShape = async (req: Request, res: Response) => {
           y2: shape.y2,
         },
       });
-    }else if(shape.type === "freehand"){
+    } else if (shape.type === "freehand") {
       addShape = await prismaClient.shape.create({
         // @ts-ignore
-        data:{
+        data: {
           type: shape.type,
           documentId,
           points: shape.points,
-        }
+        },
       });
-    }else {
+    } else {
       addShape = await prismaClient.shape.create({
         data: {
           documentId,
@@ -358,6 +358,62 @@ export const clearShapes = async (req: Request, res: Response) => {
     res.json({
       success: true,
       message: "Shapes cleared",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+export const overwriteCanvas = async (req: Request, res: Response) => {
+  try {
+    const { documentId, shapes } = req.body;
+
+    if (!documentId) {
+      res.status(400).json({
+        success: false,
+        message: "Document ID is required",
+      });
+      return;
+    }
+    if (!shapes) {
+      res.status(400).json({
+        success: false,
+        message: "Shapes are required",
+      });
+      return;
+    }
+    const document = await prismaClient.document.findUnique({
+      where: {
+        id: documentId,
+      },
+    });
+    if (!document) {
+      res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+      return;
+    }
+    await prismaClient.shape.deleteMany({
+      where: {
+        documentId,
+      },
+    });
+    const bulkShapes = await prismaClient.shape.createMany({
+      data: shapes.map((shape: any) => ({
+        ...shape,
+        documentId,
+      })),
+    });
+    res.json({
+      success: true,
+      bulkShapes,
+      message: "Canvas overwritten",
     });
   } catch (error) {
     console.log(error);

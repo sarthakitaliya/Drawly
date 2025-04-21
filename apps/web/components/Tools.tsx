@@ -12,6 +12,8 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Undo,
+  Redo,
 } from "lucide-react";
 import { useCanvasStore, useSocketStore, useLoadingStore } from "@repo/store";
 import { useEffect, useState } from "react";
@@ -27,16 +29,18 @@ export default function Tools({
   setSelectedTool,
   canva,
   members,
+  setMembers,
   isReadonly,
 }: {
   selectedTool: Tool;
   setSelectedTool: (s: Tool) => void;
   canva: any;
   members: any[];
+  setMembers: (m: any[]) => void;
   isReadonly: boolean;
 }) {
   const { data: session } = useSession();
-  const { setDocumentID, isCollaborative, clearCanvas } = useCanvasStore();
+  const { setDocumentID, isCollaborative, getAllMembers } = useCanvasStore();
   const { convertToCollab, connectToSocket, socket, disconnect, onlineUsers } =
     useSocketStore();
   const loadingStore = useLoadingStore();
@@ -90,13 +94,15 @@ export default function Tools({
         process.env.NEXT_PUBLIC_SOCKET_URL as string,
         canva.documentID
       );
+      const res = await getAllMembers(canva.documentID);
+      setMembers(res);
     } catch (error) {
       console.error("Failed to connect to room:", error);
       loadingStore.setError("Failed to enable collaborative mode");
     }
   };
 
-  const handleCollaborativeClick = () => {
+  const handleCollaborativeClick = async () => {
     if (isReadonly) return;
     setCollaborativeOpen(!collaborativeOpen);
     if (!collaborativeOpen) {
@@ -302,6 +308,32 @@ export default function Tools({
               </div>
             ))}
           </div>
+        </div>
+      )}
+      {!isReadonly && (
+        <div style={{
+          position: "fixed",
+          bottom: 15,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }} className="flex gap-2 bg-zinc-800 px-2 py-1.5 rounded-lg shadow-lg">
+          <IconButton
+            onClick={() => {
+              if (isReadonly) return;
+              canva.undo();
+            }}
+            icon={<Undo size={20} />}
+            title="Undo"
+          />
+          
+          <IconButton
+            onClick={() => {
+              if (isReadonly) return;
+              canva.redo();
+            }}
+            icon={<Redo size={20} />}
+            title="Redo"
+          />
         </div>
       )}
     </div>

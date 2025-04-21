@@ -67,7 +67,6 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     });
 
     socket.on("connect", () => {
-      console.log("Socket connected successfully");
       set({ socket, isConnected: true });
       useCanvasStore.getState().setIsCollaborative(true);
       socket.emit("get-users", documentId);

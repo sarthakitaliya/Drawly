@@ -56,6 +56,9 @@ export class Draw {
   private panStart: { x: number; y: number } = { x: 0, y: 0 };
   private scale: number = 1;
   private isReadonly: boolean = false;
+  private undoStack: Shape[][] = [];
+  private redoStack: Shape[][] = [];
+
   constructor(
     canvas: HTMLCanvasElement,
     documentID: string,
@@ -83,8 +86,6 @@ export class Draw {
   }
 
   async init() {
-    console.log("init", this.documentID);
-
     if (!this.documentID) return;
 
     try {
@@ -117,10 +118,35 @@ export class Draw {
       this.redraw();
       console.log(this.existingShapes);
     });
+    
     this.socket.on("clear-canvas", (data: { roomId: string }) => {
       console.log("clear canvas come come");
       this.existingShapes = [];
       this.redraw();
+    });
+
+    this.socket.on("undo-shape", () => {
+      if (this.undoStack.length > 0) {
+        const lastState = this.undoStack.pop();
+        if (lastState) {
+          this.redoStack.push([...this.existingShapes]);
+          this.existingShapes = [...lastState];
+          this.redraw();
+          this.syncWithServer();
+        }
+      }
+    });
+
+    this.socket.on("redo-shape", () => {
+      if (this.redoStack.length > 0) {
+        const lastState = this.redoStack.pop();
+        if (lastState) {
+          this.undoStack.push([...this.existingShapes]);
+          this.existingShapes = [...lastState];
+          this.redraw();
+          this.syncWithServer();
+        }
+      }
     });
   }
 
@@ -183,8 +209,6 @@ export class Draw {
   }
 
   drawFreehand(shape: Shape) {
-    console.log(shape);
-
     if (shape?.type == "freehand") {
       if (!shape.points || shape.points.length < 2) return;
 
@@ -205,7 +229,6 @@ export class Draw {
     }
   }
   clearCanvas = async () => {
-    console.log(this.documentID);
     try {
       const res = await useCanvasStore.getState().clearCanvas(this.documentID);
       //@ts-ignore
@@ -223,7 +246,7 @@ export class Draw {
       }
       this.socket.emit("clear-canvas", { roomId: this.documentID });
     }
-  }
+  };
   redraw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#18181B";
@@ -234,7 +257,6 @@ export class Draw {
     // this.ctx.setTransform(1, 0, 0, 1, this.offset.x, this.offset.y); // Reset after drawing
 
     if (!this.existingShapes) return;
-    console.log("from the draw", this.existingShapes);
 
     this.existingShapes.forEach((shape) => {
       if (!shape) return;
@@ -348,6 +370,8 @@ export class Draw {
     if (!shape) return;
 
     // Add shape to local state
+    this.undoStack.push([...this.existingShapes]);
+    this.redoStack = [];
     this.existingShapes.push(shape);
     this.redraw();
 
@@ -449,6 +473,56 @@ export class Draw {
 
     this.redraw();
   };
+  undo() {
+    if (this.undoStack.length > 0) {
+      if (this.isCollaborative) {
+        if (this.socket.connected) {
+          this.socket.emit("undo-shape", { roomId: this.documentID });
+        } else {
+          useLoadingStore.getState().setMsg("Something went wrong");
+        }
+        return;
+      }
+
+      const lastState = this.undoStack.pop();
+      if (lastState) {
+        this.redoStack.push([...this.existingShapes]);
+        this.existingShapes = [...lastState];
+        this.redraw();
+        this.syncWithServer();
+      }
+    }
+  }
+  redo() {
+    if (this.redoStack.length > 0) {
+      if (this.isCollaborative) {
+        if (this.socket.connected) {
+          this.socket.emit("redo-shape", { roomId: this.documentID });
+        } else {
+          useLoadingStore.getState().setMsg("Something went wrong");
+        }
+        return;
+      }
+
+      const lastState = this.redoStack.pop();
+      if (lastState) {
+        this.undoStack.push([...this.existingShapes]);
+        this.existingShapes = [...lastState];
+        this.redraw();
+        this.syncWithServer();
+      }
+    }
+  }
+  async syncWithServer() {
+    try {
+      const res = await useCanvasStore
+        .getState()
+        .overwriteCanvas(this.documentID, this.existingShapes);
+    } catch (error) {
+      console.error("Failed to sync with server:", error);
+      useLoadingStore.getState().setError("Failed to sync with server");
+    }
+  }
 
   handleCursor = (e: MouseEvent) => {
     if (this.isCollaborative && this.socket?.connected) {
@@ -474,8 +548,6 @@ export class Draw {
   }
 
   initMouseHandlers() {
-    console.log("init mouse handlers", this.isReadonly);
-
     this.canvas.addEventListener("mousedown", this.mouseDownHanler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);

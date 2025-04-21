@@ -21,7 +21,6 @@ export default function CanvasPage() {
 
   async function connect() {
     if (!documentID) {
-      console.log("documentID is not set");
       return;
     }
     const response = await checkDocumentAccess(documentID as string);
@@ -38,7 +37,6 @@ export default function CanvasPage() {
           documentID as string
         );
         setIsCollaborative(true); 
-        console.log("Socket connection initialized");
         const member = await getAllMembers(documentID as string)
         setMembers(member);
       } catch (error) {
@@ -65,7 +63,6 @@ export default function CanvasPage() {
       if (!documentID) {
         return;
       }
-      console.log("rendering");
 
       const g = new Draw(
         canvasRef.current,
@@ -89,7 +86,7 @@ export default function CanvasPage() {
   return (
     <div>
       <OtherCursors />
-      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} members={members} isReadonly={false} />
+      <Tools selectedTool={tool} setSelectedTool={setTool} canva={canva} members={members} setMembers={setMembers} isReadonly={false} />
       <canvas ref={canvasRef}></canvas>
     </div>
   );
