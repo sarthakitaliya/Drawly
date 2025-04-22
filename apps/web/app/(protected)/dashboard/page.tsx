@@ -54,7 +54,6 @@ export default function Dashboard() {
       try {
         setLoading(true);
         const res = await api.get("/documents");
-        console.log(res.data);
 
         if (res.data.success === false) {
           setError("Internal server error");
@@ -92,6 +91,16 @@ export default function Dashboard() {
 
   const handleOnConfirm = async () => {
     if (type === "create") {
+      if (!inputText) {
+        setError("Document name cannot be empty");
+        setInputText("");
+        return;
+      }
+      if (inputText.length > 20) {
+        setError("Document name cannot be more than 20 characters");
+        setInputText("");
+        return;
+      }
       createDocument(inputText).then((id) => {
         if (id) {
           setDocumentID(id);
@@ -101,6 +110,11 @@ export default function Dashboard() {
         }
       });
     } else if (type === "join") {
+      if (inputText.length !== 25) {
+        setError("Invalid document ID");
+        setInputText("");
+        return;
+      }
       router.push(`/document/${inputText}`);
     }
   };
