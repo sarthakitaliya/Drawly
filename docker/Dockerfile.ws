@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+RUN npm install -g pnpm
+
+COPY ./package.json ./package.json
+COPY ./turbo.json ./turbo.json
+COPY ./pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
+
+COPY ./packages ./packages
+COPY ./apps/ws-server ./apps/ws-server
+
+RUN pnpm install
+RUN pnpm run prisma:generate
+
+WORKDIR /usr/src/app/apps/ws-server
+RUN pnpm run build
+
+EXPOSE 3001
+
+CMD [ "node", "dist/index.js" ]
